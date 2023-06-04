@@ -1,0 +1,26 @@
+{
+    "$schema": "vendor/infection/infection/resources/schema.json",
+    "source": {
+        "directories": [
+            "src",
+        ]
+    },
+    "mutators": {
+        "@default": true,
+        "ProtectedVisibility": false,
+        "TrueValue": {
+            "ignore": [
+                "Henzeb\\Pipeline\\Concerns\\HandlesPipe::parseMethodNameFromClosure"
+            ]
+        },
+        "MethodCallRemoval": {
+            "ignore": [
+                "Henzeb\\Pipeline\\Concerns\\HandlesPipe::parseMethodNameFromClosure"
+            ]
+    },
+
+    },
+    "logs": {
+        "html": "infection.html"
+    }
+}
