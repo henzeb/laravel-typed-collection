@@ -8,6 +8,7 @@ use Henzeb\Collection\Exceptions\InvalidTypeException;
 use Henzeb\Collection\Exceptions\MissingGenericsException;
 use Henzeb\Collection\LazyTypedCollection;
 use Henzeb\Collection\TypedCollection;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Support\LazyCollection;
 use PHPUnit\Framework\TestCase;
 use TypeError;
@@ -308,5 +309,23 @@ class TypedCollectionTest extends TestCase
         $this->assertSame($lazy::class, $lazyClass::class);
 
         $this->assertSame(['hello world'], $lazy->all());
+    }
+
+    public function testInterfaceAsGeneric()
+    {
+        $this->expectNotToPerformAssertions();
+        
+        $collection = new class extends TypedCollection {
+            protected function generics(): string|Type|array
+            {
+                return ShouldBeUnique::class;
+            }
+        };
+
+        $collection->add(
+            new class implements ShouldBeUnique {
+
+            }
+        );
     }
 }

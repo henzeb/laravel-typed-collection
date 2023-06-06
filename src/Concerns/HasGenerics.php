@@ -42,7 +42,7 @@ trait HasGenerics
                 continue;
             }
 
-            if (class_exists($generic)) {
+            if (class_exists($generic) || interface_exists($generic)) {
                 continue;
             }
 
@@ -74,7 +74,9 @@ trait HasGenerics
 
     private function matchesGeneric(mixed $type, mixed $item): bool
     {
-        if (is_string($type) && class_exists($type)) {
+        if (is_string($type)
+            && (class_exists($type) || interface_exists($type))
+        ) {
             return $item instanceof $type;
         }
 
