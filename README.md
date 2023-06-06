@@ -55,6 +55,56 @@ class MixedCollection extends TypedCollection
 }
 ````
 
+### Lazy Collections
+
+````php
+use Henzeb\Collection\LazyTypedCollection;
+use Henzeb\Collection\Enums\Type;
+
+class PostCollection extends LazyTypedCollection
+{
+    protected function generics(): string|Type|array
+    {
+        return Post::class;
+    }
+}
+
+class MixedCollection extends LazyTypedCollection
+{
+    protected function generics(): string|Type|array
+    {
+        return [Post::class, Type::String];
+    }
+}
+````
+
+Note: be aware the value type is validated when yielded and not before or after.
+
+### Get Lazy Typed Collection from Typed Collection
+
+Using the `lazy()` method you will receive the default `LazyCollection`,
+If that's not what you want, you can do the following
+
+````php
+use Henzeb\Collection\TypedCollection;
+use Henzeb\Collection\Enums\Type;
+
+class PostCollection extends TypedCollection
+{
+    protected function generics(): string|Type|array
+    {
+        return Post::class;
+    }
+
+    protected function lazyClass(): string
+    {
+        return LazyPostCollection::class;
+    }
+}
+
+(new PostCollection())->lazy(); // now returns a LazyPostCollection instance
+````
+
 ## Testing this package
 
 ```bash

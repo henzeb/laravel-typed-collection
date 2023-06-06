@@ -10,29 +10,30 @@ use Illuminate\Support\ServiceProvider;
 
 class TypedCollectionProvider extends ServiceProvider
 {
-    public function register(): void
+    public function boot(): void
     {
-        Collection::macro(
-            'withGenerics',
-            function (string|Type ...$generics) {
-                return new class($this->all(), $generics) extends TypedCollection {
+        Collection::macro('withGenerics', function (string|Type ...$generics) {
+            /**
+             * @var $this Collection
+             */
 
-                    use CollectsGenerics;
+            return new class($this->all(), $generics) extends TypedCollection {
 
-                    public function __construct(
-                        array $items,
-                        private array|string|Type|null $generics = null
-                    ) {
-                        $this->generics ??= $this->collectGenerics();
-                        parent::__construct($items);
-                    }
+                use CollectsGenerics;
 
-                    protected function generics(): string|Type|array
-                    {
-                        return $this->generics;
-                    }
-                };
-            }
-        );
+                public function __construct(
+                    array $items,
+                    private array|string|Type|null $generics = null
+                ) {
+                    $this->generics = $this->generics ?: $this->collectGenerics();
+                    parent::__construct($items);
+                }
+
+                protected function generics(): string|Type|array
+                {
+                    return $this->generics;
+                }
+            };
+        });
     }
 }
