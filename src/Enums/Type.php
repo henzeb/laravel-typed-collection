@@ -60,4 +60,19 @@ enum Type
 
         return false;
     }
+
+    public function value(): string
+    {
+        return match ($this) {
+            self::Bool => 'boolean',
+            self::String => 'string',
+            self::Int => 'integer',
+            self::Double => 'double',
+            self::Array => 'array',
+            self::Null => 'NULL',
+            self::Resource => 'resource',
+            self::Object => 'object',
+            self::Numeric => 'numeric'
+        };
+    }
 }

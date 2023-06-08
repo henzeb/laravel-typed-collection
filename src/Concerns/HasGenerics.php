@@ -63,13 +63,18 @@ trait HasGenerics
      */
     private function validateType(mixed $item): void
     {
-        foreach (Arr::wrap($this->generics()) as $generic) {
+        $generics = Arr::wrap($this->generics());
+        foreach ($generics as $generic) {
             if ($this->matchesGeneric($generic, $item)) {
                 return;
             }
         }
 
-        throw new InvalidTypeException();
+        throw new InvalidTypeException(
+            self::class,
+            $item,
+            $generics
+        );
     }
 
     private function matchesGeneric(mixed $type, mixed $item): bool

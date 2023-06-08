@@ -93,4 +93,30 @@ class TypeTest extends TestCase
     {
         $this->assertEquals($expected, $with->equals($match));
     }
+
+    public static function providesValueTestcases()
+    {
+        return [
+            ['type' => Type::Bool, 'expected' => 'boolean'],
+            ['type' => Type::String, 'expected' => 'string'],
+            ['type' => Type::Int, 'expected' => 'integer'],
+            ['type' => Type::Double, 'expected' => 'double'],
+            ['type' => Type::Array, 'expected' => 'array'],
+            ['type' => Type::Null, 'expected' => 'NULL'],
+            ['type' => Type::Resource, 'expected' => 'resource'],
+            ['type' => Type::Object, 'expected' => 'object'],
+            ['type' => Type::Numeric, 'expected' => 'numeric']
+        ];
+    }
+
+    /**
+     * @param Type $type
+     * @param string $expected
+     * @return void
+     * @dataProvider providesValueTestcases
+     */
+    public function testValue(Type $type, string $expected): void
+    {
+        $this->assertEquals($expected, $type->value());
+    }
 }
