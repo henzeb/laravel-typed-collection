@@ -2,6 +2,7 @@
 
 namespace Henzeb\Collection\Concerns;
 
+use Henzeb\Collection\Contracts\GenericType;
 use Henzeb\Collection\Enums\Type;
 use Henzeb\Collection\Exceptions\InvalidGenericException;
 use Henzeb\Collection\Exceptions\InvalidTypeException;
@@ -79,6 +80,12 @@ trait HasGenerics
 
     private function matchesGeneric(mixed $type, mixed $item): bool
     {
+        if (is_string($type)
+            && (class_exists($type) && is_a($type, GenericType::class, true))
+        ) {
+            return $type::matchesType($item);
+        }
+
         if (is_string($type)
             && (class_exists($type) || interface_exists($type))
         ) {

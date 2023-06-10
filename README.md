@@ -85,6 +85,50 @@ Note: be aware the value type is validated when yielded and not before or after.
 Using the `lazy()` method you will receive the default `LazyCollection`,
 If that's not what you want, you can do the following
 
+### Available Types
+
+There is a `Type` enum which supports all types supported by PHP.
+Next to `Type`, you can add in Fully Qualified Class Names of interfaces
+or objects.
+
+#### Custom Generic Types
+
+Sometimes, you want to validate scalar types some more. For example `JSON`.
+To achieve that, you can use the `GenericType` interface.
+
+````php
+use Henzeb\Collection\Contracts\GenericType;
+
+readonly class JSON implements GenericType
+{
+    public static function matchesType(mixed $item): bool
+    {
+        /** json_validate is a poly-fill function ahead of php 8.3 */
+        return json_validate($item);
+    }
+}
+````
+
+And then use it as such:
+
+````php
+use Henzeb\Collection\TypedCollection;
+use Henzeb\Collection\Enums\Type;
+
+class JsonCollection extends TypedCollection
+{
+    protected function generics() : string|Type|array
+    {
+        return JSON::class;
+    }
+}
+
+(new JsonCollection())->add('{"hello":"world"}'); // succeeds
+(new JsonCollection())->add('{"hello":"world"'); // throws InvalidTypeException
+(new JsonCollection())->add(['hello'=>'world']); // throws InvalidTypeException
+
+````
+
 ````php
 use Henzeb\Collection\TypedCollection;
 use Henzeb\Collection\Enums\Type;

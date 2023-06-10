@@ -2,6 +2,7 @@
 
 namespace Henzeb\Collection\Tests\Unit;
 
+use Henzeb\Collection\Contracts\GenericType;
 use Henzeb\Collection\Enums\Type;
 use Henzeb\Collection\Exceptions\InvalidGenericException;
 use Henzeb\Collection\Exceptions\InvalidTypeException;
@@ -314,7 +315,7 @@ class TypedCollectionTest extends TestCase
     public function testInterfaceAsGeneric()
     {
         $this->expectNotToPerformAssertions();
-        
+
         $collection = new class extends TypedCollection {
             protected function generics(): string|Type|array
             {
@@ -327,5 +328,53 @@ class TypedCollectionTest extends TestCase
 
             }
         );
+    }
+
+    public function testCustomGenericType(): void
+    {
+        $genericType = new class implements GenericType {
+            public static function matchesType(mixed $item): bool
+            {
+                return true;
+            }
+        };
+
+        $collection = new class($genericType::class, ['Hello World'],) extends TypedCollection {
+            public function __construct(private string $genericType, $items = [])
+            {
+                parent::__construct($items);
+            }
+
+            protected function generics(): string|Type|array
+            {
+                return $this->genericType;
+            }
+        };
+
+        $this->assertSame(['Hello World'], $collection->all());
+    }
+
+    public function testCustomGenericTypeFail(): void
+    {
+        $genericType = new class implements GenericType {
+            public static function matchesType(mixed $item): bool
+            {
+                return false;
+            }
+        };
+
+        $this->expectException(InvalidTypeException::class);
+
+        new class($genericType::class, ['Hello World'],) extends TypedCollection {
+            public function __construct(private string $genericType, $items = [])
+            {
+                parent::__construct($items);
+            }
+
+            protected function generics(): string|Type|array
+            {
+                return $this->genericType;
+            }
+        };
     }
 }
