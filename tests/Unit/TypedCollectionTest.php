@@ -5,13 +5,20 @@ namespace Henzeb\Collection\Tests\Unit;
 use Henzeb\Collection\Contracts\GenericType;
 use Henzeb\Collection\Enums\Type;
 use Henzeb\Collection\Exceptions\InvalidGenericException;
+use Henzeb\Collection\Exceptions\InvalidKeyGenericException;
+use Henzeb\Collection\Exceptions\InvalidKeyTypeException;
 use Henzeb\Collection\Exceptions\InvalidTypeException;
 use Henzeb\Collection\Exceptions\MissingGenericsException;
+use Henzeb\Collection\Exceptions\MissingKeyGenericsException;
+use Henzeb\Collection\Generics\Json;
+use Henzeb\Collection\Generics\Uuid;
 use Henzeb\Collection\LazyTypedCollection;
+use Henzeb\Collection\Support\GenericsCollection;
 use Henzeb\Collection\TypedCollection;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Support\LazyCollection;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use TypeError;
 
 class TypedCollectionTest extends TestCase
@@ -365,7 +372,7 @@ class TypedCollectionTest extends TestCase
 
         $this->expectException(InvalidTypeException::class);
 
-        new class($genericType::class, ['Hello World'],) extends TypedCollection {
+        new class($genericType::class, ['Hello World']) extends TypedCollection {
             public function __construct(private string $genericType, $items = [])
             {
                 parent::__construct($items);
@@ -376,5 +383,156 @@ class TypedCollectionTest extends TestCase
                 return $this->genericType;
             }
         };
+    }
+
+    public function testGenericKeyValidation()
+    {
+        $this->expectNotToPerformAssertions();
+        foreach (Type::keyables() + [Uuid::class] as $keyable) {
+            new GenericsCollection([], Type::String, $keyable);
+        }
+
+        new GenericsCollection(
+            [],
+            Type::String,
+            [Type::String, Uuid::class, Json::class]
+        );
+    }
+
+    public function testGenericKeyFailAfterSuccessWithType()
+    {
+        $this->expectException(InvalidKeyGenericException::class);
+        new GenericsCollection(
+            [],
+            Type::String,
+            [Type::String, $this::class, Json::class]
+        );
+    }
+
+    public function testGenericKeyFailAfterSuccessWithGenericType()
+    {
+        $this->expectException(InvalidKeyGenericException::class);
+        new GenericsCollection(
+            [],
+            Type::String,
+            [Json::class, 'not a valid type']
+        );
+    }
+
+    public function testGenericKeyAcceptsStringedTypes()
+    {
+        $this->expectNotToPerformAssertions();
+        new GenericsCollection(
+            [],
+            Type::String,
+            ['string', 'int', 'bool']
+        );
+    }
+
+    public function testInvalidGenericKeyString()
+    {
+        $this->expectException(InvalidKeyGenericException::class);
+
+        new GenericsCollection([], Type::String, self::class);
+    }
+
+    public function testInvalidGenericKeyObject()
+    {
+        $this->expectException(InvalidKeyTypeException::class);
+
+        $collection = new GenericsCollection([], Type::String, Type::String);
+
+        $collection->put(new stdClass(), 'test');
+    }
+
+    public static function providesKeyableTestcases(): array
+    {
+        return [
+            'int' => [0],
+            'numeric' => ['12'],
+            'String' => ['hello'],
+            'Bool' => [true],
+            'Null' => [null],
+            'Uuid' => [\Ramsey\Uuid\Uuid::uuid4()->toString(), Uuid::class],
+            'mixed-int' => [1, [Type::Int, Type::String]],
+            'mixed-string' => ['1', [Type::Int, Type::String]],
+            'int-fail' => [0, Type::String, true],
+            'numeric-fail' => ['12', Type::String, true],
+            'String-fail' => ['hello', Type::Bool, true],
+            'Bool-fail' => [true, Type::String, true],
+            'Null-fail' => [null, Type::String, true],
+            'Uuid-fail' => ['ohoh', Uuid::class, true]
+        ];
+    }
+
+    /**
+     * @param mixed $key
+     * @param Type|string|array|null $generics
+     * @param bool $exception
+     * @return void
+     *
+     * @dataProvider providesKeyableTestcases
+     */
+    public function testKeyValidation(
+        mixed $key,
+        Type|string|array $generics = null,
+        bool $exception = false
+    ): void {
+        $key = is_null($key) ? (int)$key : $key;
+
+        if ($exception) {
+            $this->expectException(InvalidKeyTypeException::class);
+        }
+
+        $collection = new GenericsCollection(
+            [$key => 'world'],
+            Type::String,
+            $generics,
+        );
+
+        $this->assertEquals(
+            [$key => 'world'],
+            $collection->all()
+        );
+    }
+
+    public function testMissingKeyGenerics()
+    {
+        $this->expectException(MissingKeyGenericsException::class);
+        new class extends TypedCollection {
+            protected function generics(): string|Type|array
+            {
+                return Type::String;
+            }
+
+            protected function keyGenerics(): string|Type|array
+            {
+                return [];
+            }
+        };
+    }
+
+    public function testPushKeyGenericsValidation(): void
+    {
+        $collection = (new GenericsCollection([], Type::String))
+            ->push('hello', 'world');
+
+        $this->assertSame(['hello', 'world'], $collection->all());
+
+        $this->expectException(InvalidKeyTypeException::class);
+
+        (new GenericsCollection([], Type::String, Type::String))
+            ->push('hello', 'world');
+    }
+
+    public function testAllowMixed(): void
+    {
+        $expected = ['da', 0, true, 1.1, new stdClass()];
+        $collecton = new GenericsCollection(
+            $expected,
+            Type::Mixed
+        );
+
+        $this->assertSame($expected, $collecton->all());
     }
 }

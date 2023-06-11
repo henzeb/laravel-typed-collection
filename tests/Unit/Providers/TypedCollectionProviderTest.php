@@ -3,7 +3,10 @@
 namespace Henzeb\Collection\Tests\Unit\Providers;
 
 use Henzeb\Collection\Enums\Type;
+use Henzeb\Collection\Exceptions\InvalidKeyTypeException;
 use Henzeb\Collection\Exceptions\InvalidTypeException;
+use Henzeb\Collection\Exceptions\MissingGenericsException;
+use Henzeb\Collection\Generics\Uuid;
 use Henzeb\Collection\LazyTypedCollection;
 use Henzeb\Collection\Providers\TypedCollectionProvider;
 use Henzeb\Collection\TypedCollection;
@@ -40,6 +43,15 @@ class TypedCollectionProviderTest extends TestCase
         $this->expectException(InvalidTypeException::class);
 
         $collection->put('test', $this);
+    }
+
+    public function testGetWithGenericsWithoutTypes()
+    {
+        $this->expectException(MissingGenericsException::class);
+        collect()->withGenerics();
+
+        $this->expectException(MissingGenericsException::class);
+        collect()->lazy()->withGenerics();
     }
 
     public function testGetWithGenericsLazy()
@@ -99,6 +111,74 @@ class TypedCollectionProviderTest extends TestCase
         $collection->put('test', $this);
     }
 
+    public function testTypedCollectionWithKeyGenerics()
+    {
+        $uuid1 = \Ramsey\Uuid\Uuid::uuid4()->toString();
+        $uuid2 = \Ramsey\Uuid\Uuid::uuid4()->toString();
+        $uuid3 = \Ramsey\Uuid\Uuid::uuid4()->toString();
+
+        $typed = new class([$uuid1 => 'initial value']) extends TypedCollection {
+            protected function generics(): string|Type|array
+            {
+                return Type::String;
+            }
+
+            protected function keyGenerics(): string|Type|array
+            {
+                return Uuid::class;
+            }
+        };
+
+        $collection = $typed->withKeyGenerics();
+
+        $this->assertInstanceOf(TypedCollection::class, $collection);
+
+        $collection->put($uuid2, 'a string');
+
+        $collection[$uuid3] = 'another string';
+
+        $this->assertSame(
+            [
+                $uuid1 => 'initial value',
+                $uuid2 => 'a string',
+                $uuid3 => 'another string',
+            ],
+            $collection->all()
+        );
+
+        $this->expectException(InvalidTypeException::class);
+
+        $collection->put('test', $this);
+    }
+
+    public function testLazyTypedCollectionWithKeyGenerics()
+    {
+        $uuid1 = \Ramsey\Uuid\Uuid::uuid4()->toString();
+
+        $typed = new class([$uuid1 => 'initial value']) extends LazyTypedCollection {
+            protected function generics(): string|Type|array
+            {
+                return Type::String;
+            }
+
+            protected function keyGenerics(): string|Type|array
+            {
+                return Uuid::class;
+            }
+        };
+
+        $collection = $typed->withKeyGenerics();
+
+        $this->assertInstanceOf(LazyTypedCollection::class, $collection);
+
+        $this->assertSame(
+            [
+                $uuid1 => 'initial value',
+            ],
+            $collection->all()
+        );
+    }
+
     public function testOnlyGenerics(): void
     {
         collect([true, 'hello world'])
@@ -114,6 +194,19 @@ class TypedCollectionProviderTest extends TestCase
         collect([true, 'hello world'])
             ->onlyGenerics(Type::Bool)
             ->withGenerics(Type::String);
+    }
+
+    public function testOnlyKeyGenerics(): void
+    {
+        collect([0 => 'test', 'hello world' => 'test'])
+            ->onlyKeyGenerics(Type::Int)
+            ->withKeyGenerics(Type::Int);
+
+        $this->expectException(InvalidKeyTypeException::class);
+
+        collect([0 => 'test', 'hello world' => 'test'])
+            ->onlyKeyGenerics(Type::String)
+            ->withKeyGenerics(Type::Int);
     }
 
     public function testOnlyLazyGenerics(): void
@@ -139,6 +232,23 @@ class TypedCollectionProviderTest extends TestCase
 
         $this->expectException(InvalidTypeException::class);
 
+        $collection->getIterator()->next();
+    }
+
+    public function testOnlyKeyGenericsLazy(): void
+    {
+        $collection = collect([0 => 'test', 'hello world' => 'test'])
+            ->lazy()
+            ->onlyKeyGenerics(Type::Int)
+            ->withGenerics(Type::Int);
+
+        $collection->getIterator()->next();
+
+        $this->expectException(InvalidTypeException::class);
+
+        $collection = collect([0 => 'test', 'hello world' => 'test'])
+            ->onlyGenerics(Type::String)
+            ->withGenerics(Type::Int);
         $collection->getIterator()->next();
     }
 }

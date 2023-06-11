@@ -13,6 +13,7 @@ enum Type
     case Null;
     case Resource;
     case Object;
+    case Mixed;
 
     public static function tryFrom(string $name): ?self
     {
@@ -44,6 +45,22 @@ enum Type
             'object' => self::Object,
             default => null
         };
+    }
+
+    public static function keyables(): array
+    {
+        return [
+            Type::Int,
+            Type::Numeric,
+            Type::String,
+            Type::Bool,
+            Type::Null,
+        ];
+    }
+
+    public function keyable(): bool
+    {
+        return in_array($this, self::keyables());
     }
 
     public function equals(?Type $type): bool

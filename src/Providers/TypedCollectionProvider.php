@@ -3,7 +3,6 @@
 namespace Henzeb\Collection\Providers;
 
 use Henzeb\Collection\Mixins\CollectionMixin;
-use Henzeb\Collection\Mixins\WithGenericsMixin;
 use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
 use Illuminate\Support\ServiceProvider;

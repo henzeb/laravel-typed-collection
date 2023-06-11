@@ -97,8 +97,8 @@ trait HasGenerics
         }
 
         return $type->equals(
-            Type::fromValue($item)
-        );
+                Type::fromValue($item),
+            ) || $type->equals(Type::Mixed);
     }
 
     public function accepts(mixed $item): bool
