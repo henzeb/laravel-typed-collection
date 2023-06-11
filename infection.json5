@@ -7,18 +7,7 @@
     },
     "mutators": {
         "@default": true,
-        "ProtectedVisibility": false,
-        "TrueValue": {
-            "ignore": [
-                "Henzeb\\Pipeline\\Concerns\\HandlesPipe::parseMethodNameFromClosure"
-            ]
-        },
-        "MethodCallRemoval": {
-            "ignore": [
-                "Henzeb\\Pipeline\\Concerns\\HandlesPipe::parseMethodNameFromClosure"
-            ]
-    },
-
+        "PublicVisibility": false,
     },
     "logs": {
         "html": "infection.html"

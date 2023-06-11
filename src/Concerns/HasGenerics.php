@@ -100,4 +100,14 @@ trait HasGenerics
             Type::fromValue($item)
         );
     }
+
+    public function accepts(mixed $item): bool
+    {
+        try {
+            $this->validateType($item);
+        } catch (InvalidTypeException) {
+            return false;
+        }
+        return true;
+    }
 }
