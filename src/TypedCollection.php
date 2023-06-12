@@ -69,4 +69,11 @@ abstract class TypedCollection extends Collection
 
         return new $lazyClass($this->all());
     }
+
+    public function chunk($size)
+    {
+        return $this->collect()
+            ->chunk($size)
+            ->mapInto(static::class);
+    }
 }

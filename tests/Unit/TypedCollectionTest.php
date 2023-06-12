@@ -535,4 +535,25 @@ class TypedCollectionTest extends TestCase
 
         $this->assertSame($expected, $collecton->all());
     }
+
+    public function testAllowChunks(): void
+    {
+        $collection = new class(['hello', 'world', '!']) extends TypedCollection {
+            protected function generics(): Type
+            {
+                return Type::String;
+            }
+        };
+
+        $chunks = $collection->chunk(2);
+
+        $this->assertCount(2, $chunks);
+
+        foreach ($chunks as $chunk) {
+            $this->assertInstanceOf($collection::class, $chunk);
+        }
+
+        $this->assertSame(['hello', 'world'], $chunks->first()->all());
+        $this->assertSame([2 => '!'], $chunks->last()->all());
+    }
 }

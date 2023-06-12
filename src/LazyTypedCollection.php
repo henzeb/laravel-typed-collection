@@ -50,4 +50,20 @@ abstract class LazyTypedCollection extends LazyCollection
 
         return $item;
     }
+
+    public function chunkWhile(callable $callback)
+    {
+        return (new LazyCollection(
+            $this
+        ))->chunkWhile($callback)
+            ->mapInto(static::class);
+    }
+
+    public function chunk($size)
+    {
+        return (new LazyCollection(
+            $this
+        ))->chunk($size)
+            ->mapInto(static::class);
+    }
 }

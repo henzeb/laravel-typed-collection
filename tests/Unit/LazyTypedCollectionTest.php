@@ -158,4 +158,47 @@ class LazyTypedCollectionTest extends TestCase
             }
         };
     }
+
+    public function testAllowChunks(): void
+    {
+        $collection = new class(['hello', 'world', '!']) extends LazyTypedCollection {
+            protected function generics(): Type
+            {
+                return Type::String;
+            }
+        };
+
+        $chunks = $collection->chunk(2);
+
+        $this->assertCount(2, $chunks);
+
+        foreach ($chunks as $chunk) {
+            $this->assertInstanceOf($collection::class, $chunk);
+        }
+
+        $this->assertSame(['hello', 'world'], $chunks->first()->all());
+        $this->assertSame([2 => '!'], $chunks->last()->all());
+    }
+
+    public function testAllowChunkWhile(): void
+    {
+        $collection = new class(['hello', 'world', '!']) extends LazyTypedCollection {
+            protected function generics(): Type
+            {
+                return Type::String;
+            }
+        };
+
+        $chunks = $collection->chunkWhile(fn() => false)->all();
+
+        $this->assertCount(3, $chunks);
+
+        foreach ($chunks as $chunk) {
+            $this->assertInstanceOf($collection::class, $chunk);
+        }
+
+        $this->assertSame(['hello'], $chunks[0]->all());
+        $this->assertSame([1 => 'world'], $chunks[1]->all());
+        $this->assertSame([2 => '!'], $chunks[2]->all());
+    }
 }
