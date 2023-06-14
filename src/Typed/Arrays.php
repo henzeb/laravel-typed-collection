@@ -6,6 +6,9 @@ use Henzeb\Collection\Enums\Type;
 use Henzeb\Collection\Lazy\Arrays as LazyArrays;
 use Henzeb\Collection\TypedCollection;
 
+/**
+ * @extends TypedCollection<integer|string, array>
+ */
 class Arrays extends TypedCollection
 {
 

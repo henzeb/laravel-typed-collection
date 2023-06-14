@@ -7,6 +7,9 @@ use Henzeb\Collection\Generics\Uuid;
 use Henzeb\Collection\Lazy\Uuids as LazyUuids;
 use Henzeb\Collection\TypedCollection;
 
+/**
+ * @extends TypedCollection<integer|string, string>
+ */
 class Uuids extends TypedCollection
 {
     protected function generics(): string|Type|array

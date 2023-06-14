@@ -7,6 +7,13 @@ use Henzeb\Collection\Concerns\HasGenericKeys;
 use Henzeb\Collection\Concerns\HasGenerics;
 use Illuminate\Support\LazyCollection;
 
+/**
+ * @template TKey of array-key
+ *
+ * @template-covariant TValue
+ *
+ * @extends LazyCollection<TKey, TValue>
+ */
 abstract class LazyTypedCollection extends LazyCollection
 {
     use HasGenerics, HasGenericKeys;

@@ -6,6 +6,9 @@ use Henzeb\Collection\Enums\Type;
 use Henzeb\Collection\Lazy\Booleans as LazyBooleans;
 use Henzeb\Collection\TypedCollection;
 
+/**
+ * @extends TypedCollection<integer|string, boolean>
+ */
 class Booleans extends TypedCollection
 {
 
