@@ -83,4 +83,19 @@ abstract class TypedCollection extends Collection
             ->chunk($size)
             ->mapInto(static::class);
     }
+
+    public function map(callable $callback)
+    {
+        return $this->collect()->map($callback);
+    }
+
+    public function mapWithKeys(callable $callback)
+    {
+        return $this->collect()->mapWithKeys($callback);
+    }
+
+    public function mapToDictionary(callable $callback)
+    {
+        return $this->collect()->mapToDictionary($callback);
+    }
 }

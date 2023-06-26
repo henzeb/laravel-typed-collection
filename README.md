@@ -287,6 +287,7 @@ or objects.
 | Type::Mixed    | -                                 |
 | JSON           | Henzeb\Collection\Typed\Jsons     |
 | Uuid           | Henzeb\Collection\Typed\Uuid      |
+| Ulid           | Henzeb\Collection\Typed\Ulid      |
 
 Note: Each available collection also has a lazy counterpart.
 For `Type::Bool` for example this would be

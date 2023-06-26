@@ -25,7 +25,7 @@ class UuidTest extends TestCase
         );
     }
 
-    public function testFailsOnNotAJsonString(): void
+    public function testFailsOnNotUuidString(): void
     {
         $this->assertFalse(Uuid::matchesType('Not a Uuid'));
     }

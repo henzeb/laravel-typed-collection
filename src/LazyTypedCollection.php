@@ -73,4 +73,25 @@ abstract class LazyTypedCollection extends LazyCollection
         ))->chunk($size)
             ->mapInto(static::class);
     }
+
+    public function map(callable $callback)
+    {
+        return (new LazyCollection(
+            $this
+        ))->map($callback);
+    }
+
+    public function mapWithKeys(callable $callback): LazyCollection
+    {
+        return (new LazyCollection(
+            $this
+        ))->mapWithKeys($callback);
+    }
+
+    public function mapToDictionary(callable $callback): LazyCollection
+    {
+        return (new LazyCollection(
+            $this
+        ))->mapToDictionary($callback);
+    }
 }

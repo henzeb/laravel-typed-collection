@@ -14,6 +14,7 @@ use Henzeb\Collection\Generics\Json;
 use Henzeb\Collection\Generics\Uuid;
 use Henzeb\Collection\LazyTypedCollection;
 use Henzeb\Collection\Support\GenericsCollection;
+use Henzeb\Collection\Typed\Strings;
 use Henzeb\Collection\TypedCollection;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Support\LazyCollection;
@@ -555,5 +556,68 @@ class TypedCollectionTest extends TestCase
 
         $this->assertSame(['hello', 'world'], $chunks->first()->all());
         $this->assertSame([2 => '!'], $chunks->last()->all());
+    }
+
+    public function testAllowMapping()
+    {
+        $this->assertEquals(
+            Strings::make(['string', 'another'])->map(fn(string $string) => $string === 'string')->toArray(),
+            [true, false]
+        );
+    }
+
+    public function testAllowWithKeys()
+    {
+        $this->assertEquals(
+            Strings::make(['string', 'another'])->mapWithKeys(
+                fn(string $string, int $key) => [$key + 1 => $string === 'string']
+            )->toArray(),
+            [1 => true, 2 => false]
+        );
+    }
+
+    public function testAllowMapToDictonairy()
+    {
+        $collection = new class([
+            [
+                'name' => 'John Doe',
+                'department' => 'Sales',
+            ],
+            [
+                'name' => 'Jane Doe',
+                'department' => 'Sales',
+            ],
+            [
+                'name' => 'Johnny Doe',
+                'department' => 'Marketing',
+            ]
+        ]) extends TypedCollection {
+            protected function generics(): Type
+            {
+                return Type::Array;
+            }
+
+            protected function keyGenerics(): string|Type|array
+            {
+                return Type::Int;
+            }
+        };
+
+        $this->assertEquals(
+            $collection->mapToDictionary(
+                function (array $item) {
+                    return [$item['department'] => $item['name']];
+                }
+            )->toArray(),
+            [
+                'Sales' => [
+                    'John Doe',
+                    'Jane Doe'
+                ],
+                'Marketing' => [
+                    'Johnny Doe'
+                ]
+            ]
+        );
     }
 }
