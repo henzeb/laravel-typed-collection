@@ -5,7 +5,7 @@ namespace Henzeb\Collection;
 use Henzeb\Collection\Concerns\HasGenericKeys;
 use Henzeb\Collection\Concerns\HasGenerics;
 use Henzeb\Collection\Concerns\OverridesMethods;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Collection;
 
 /**
  * @template TKey of array-key
@@ -14,7 +14,7 @@ use Illuminate\Support\Collection;
  *
  * @extends Collection<TKey, TValue>
  */
-abstract class TypedCollection extends Collection
+abstract class EloquentTypedCollection extends Collection
 {
     use HasGenerics, HasGenericKeys, OverridesMethods;
 }

@@ -8,9 +8,14 @@
         "generics",
         "typed",
         "collection",
-        "collections"
+        "collections",
+        "eloquent",
+        "type-safe",
+        "typesafe",
+        "type",
+        "safe"
     ],
-    "homepage": "https://github.com/henzeb/laravel-generic-collection",
+    "homepage": "https://github.com/henzeb/laravel-typed-collection",
     "license": "AGPL-3.0-only",
     "type": "library",
     "authors": [
@@ -29,8 +34,9 @@
         "illuminate/collections": "^9.0.0|^10"
     },
     "require-dev": {
+        "calebporzio/sushi": "^2.4",
         "infection/infection": "^0.26.19",
-        "orchestra/testbench": "^v7.6.0|8.0",
+        "orchestra/testbench": "^v7.6.0|^8.0",
         "phpstan/phpstan": "^1.4",
         "phpunit/phpunit": "^9.6.6|^10",
         "ramsey/uuid": "^4.2.2",

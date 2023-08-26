@@ -3,11 +3,11 @@
 namespace Henzeb\Collection\Tests\Unit;
 
 use Henzeb\Collection\Enums\Type;
-use Henzeb\Collection\Exceptions\InvalidGenericException;
 use Henzeb\Collection\Exceptions\InvalidKeyTypeException;
 use Henzeb\Collection\Exceptions\InvalidTypeException;
 use Henzeb\Collection\Exceptions\MissingGenericsException;
 use Henzeb\Collection\Exceptions\MissingKeyGenericsException;
+use Henzeb\Collection\Exceptions\MissingTypedCollectionException;
 use Henzeb\Collection\Generics\Uuid;
 use Henzeb\Collection\Lazy\Strings;
 use Henzeb\Collection\LazyTypedCollection;
@@ -18,7 +18,7 @@ class LazyTypedCollectionTest extends TestCase
 {
     public function testValidatesInvalidGenerics()
     {
-        $this->expectException(InvalidGenericException::class);
+        $this->expectException(MissingTypedCollectionException::class);
 
         new class extends LazyTypedCollection {
             protected function generics(): string|Type|array
@@ -122,10 +122,11 @@ class LazyTypedCollectionTest extends TestCase
      * @dataProvider providesKeyableTestcases
      */
     public function testKeyValidation(
-        mixed $key,
+        mixed             $key,
         Type|string|array $generics = null,
-        bool $exception = false
-    ): void {
+        bool              $exception = false
+    ): void
+    {
         $key = is_null($key) ? (int)$key : $key;
 
         if ($exception) {

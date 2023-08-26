@@ -4,18 +4,21 @@ namespace Henzeb\Collection\Concerns;
 
 use Henzeb\Collection\Contracts\GenericType;
 use Henzeb\Collection\Enums\Type;
-use Henzeb\Collection\Exceptions\InvalidGenericException;
 use Henzeb\Collection\Exceptions\InvalidTypeException;
 use Henzeb\Collection\Exceptions\MissingGenericsException;
+use Henzeb\Collection\Exceptions\MissingTypedCollectionException;
 use Illuminate\Support\Arr;
 
+/**
+ * @internal
+ */
 trait HasGenerics
 {
 
     abstract protected function generics(): string|Type|array;
 
     /**
-     * @throws InvalidGenericException
+     * @throws MissingTypedCollectionException
      * @throws MissingGenericsException
      */
     private function validateGenerics(): void
@@ -32,7 +35,7 @@ trait HasGenerics
             }
 
             if (is_object($generic)) {
-                throw new InvalidGenericException('object');
+                throw new MissingTypedCollectionException('object');
             }
 
             /**
@@ -47,7 +50,7 @@ trait HasGenerics
                 continue;
             }
 
-            throw new InvalidGenericException($generic);
+            throw new MissingTypedCollectionException($generic);
         }
     }
 

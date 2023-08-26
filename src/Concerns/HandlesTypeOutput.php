@@ -4,6 +4,9 @@ namespace Henzeb\Collection\Concerns;
 
 use Henzeb\Collection\Enums\Type;
 
+/**
+ * @internal
+ */
 trait HandlesTypeOutput
 {
     private function getType(mixed $item): string

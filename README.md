@@ -3,7 +3,6 @@
 [![Build Status](https://github.com/henzeb/laravel-typed-collection/workflows/tests/badge.svg)](https://github.com/henzeb/laravel-typed-collection/actions)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/henzeb/laravel-typed-collection.svg?style=flat-square)](https://packagist.org/packages/henzeb/laravel-typed-collection)
 [![Total Downloads](https://img.shields.io/packagist/dt/henzeb/laravel-typed-collection.svg?style=flat-square)](https://packagist.org/packages/henzeb/laravel-typed-collection)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/b33a1948230c629a3c54/test_coverage)](https://codeclimate.com/github/henzeb/laravel-typed-collection/test_coverage)
 [![License](https://img.shields.io/packagist/l/henzeb/laravel-typed-collection)](https://packagist.org/packages/henzeb/laravel-typed-collection)
 
 PHP has no support for Generics. Yet sometimes, we want to be sure
@@ -11,6 +10,9 @@ we receive an array of a certain type.
 
 Using Laravel's Collections, we should be able to force types. This
 package allows you to.
+
+Unlike many other packages, this one has support for
+[Eloquent](#typed-collections-in-eloquent)!
 
 ## Installation
 
@@ -122,11 +124,16 @@ $collection = collect([ 1=>'Hello', 'world' => 'world'])
 
 $collection->all(); // returns ['Hello'];
 
-$collection = collect([ 1 => 'Hello', 'baf87839-9d8e-4bfd-a77b-2f51cd8529c9' => 'world', 'string'=>'!'])
-    ->lazy()
+$collection = collect(
+    [
+        1 => 'Hello',
+        'baf87839-9d8e-4bfd-a77b-2f51cd8529c9' => 'world',
+        'string'=>'!'
+    ])->lazy()
     ->onlyKeyGenerics(Uuid::class, Type::Int);
 
-$collection->all(); // returns [1 => 'Hello', 'baf87839-9d8e-4bfd-a77b-2f51cd8529c9' => 'world'];
+// returns [1 => 'Hello', 'baf87839-9d8e-4bfd-a77b-2f51cd8529c9' => 'world'];
+$collection->all();
 ````
 
 ### Extending TypedCollection
@@ -158,10 +165,10 @@ class PostCollection extends TypedCollection
     {
         return Post::class;
     }
-    
-    protected function keyGenerics() : string|Type|array 
+
+    protected function keyGenerics() : string|Type|array
     {
-        return Uuid::class;   
+        return Uuid::class;
     }
 }
 
@@ -171,10 +178,10 @@ class MixedCollectionWithIntegerKeys extends TypedCollection
     {
         return Type::Mixed;
     }
-    
-    protected function keyGenerics() : string|Type|array 
+
+    protected function keyGenerics() : string|Type|array
     {
-        return Type::Int;   
+        return Type::Int;
     }
 }
 
@@ -184,10 +191,10 @@ class MixedCollectionWithIntegerKeys extends TypedCollection
     {
         return Type::Mixed;
     }
-    
-    protected function keyGenerics() : string|Type|array 
+
+    protected function keyGenerics() : string|Type|array
     {
-        return [Type::Int, Uuid::class];   
+        return [Type::Int, Uuid::class];
     }
 }
 ````
@@ -220,10 +227,10 @@ class PostCollection extends LazyTypedCollection
     {
         return Post::class;
     }
-    
-    protected function keyGenerics() : string|Type|array 
+
+    protected function keyGenerics() : string|Type|array
     {
-        return Uuid::class;   
+        return Uuid::class;
     }
 }
 
@@ -233,17 +240,19 @@ class MixedCollectionWithIntegerKeys extends LazyTypedCollection
     {
         return Type::Mixed;
     }
-    
-    protected function keyGenerics() : string|Type|array 
+
+    protected function keyGenerics() : string|Type|array
     {
-        return Uuid::class;   
+        return Uuid::class;
     }
 }
 ````
 
-Note: be aware the value and or key type is validated when yielded and not before or after.
+Note: be aware the value and or key type is validated when yielded and
+not before or after.
 
-Note: the `keyGenerics` method is optional. When omitted, any type that's valid as key can be used.
+Note: the `keyGenerics` method is optional. When omitted, any type
+that's valid as key can be used.
 
 ### Get Lazy Typed Collection from Typed Collection
 
@@ -266,6 +275,38 @@ class PostCollection extends TypedCollection
 ````
 
 That way, you will always receive a lazy typed collection.
+
+### Typed collections in Eloquent
+
+With this package, you can directly return a typed collection
+directly with Laravel Eloquent.
+
+````php
+use Henzeb\Collection\Concerns\TypedCollection;
+
+class User {
+    use TypedCollection;
+
+    protected string $typedCollection = Users::class;
+}
+````
+
+You can use typed collections and lazy typed collections here. if
+`$typedCollection` is null or omitted, Exceptions will be thrown.
+
+If you need to use features from the Eloquent Collection, there is
+a Typed Collection class for that too:
+
+````php
+use Henzeb\Collection\EloquentTypedCollection;
+
+class Users extends EloquentTypedCollection
+{
+    protected function generics(): string {
+        return User::class;
+    }
+}
+````
 
 ### Available types and collections
 

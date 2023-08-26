@@ -9,6 +9,9 @@ use Henzeb\Collection\Exceptions\InvalidKeyTypeException;
 use Henzeb\Collection\Exceptions\MissingKeyGenericsException;
 use Illuminate\Support\Arr;
 
+/**
+ * @internal
+ */
 trait HasGenericKeys
 {
     protected function keyGenerics(): string|Type|array

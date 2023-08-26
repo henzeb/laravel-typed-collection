@@ -4,12 +4,12 @@ namespace Henzeb\Collection\Tests\Unit;
 
 use Henzeb\Collection\Contracts\GenericType;
 use Henzeb\Collection\Enums\Type;
-use Henzeb\Collection\Exceptions\InvalidGenericException;
 use Henzeb\Collection\Exceptions\InvalidKeyGenericException;
 use Henzeb\Collection\Exceptions\InvalidKeyTypeException;
 use Henzeb\Collection\Exceptions\InvalidTypeException;
 use Henzeb\Collection\Exceptions\MissingGenericsException;
 use Henzeb\Collection\Exceptions\MissingKeyGenericsException;
+use Henzeb\Collection\Exceptions\MissingTypedCollectionException;
 use Henzeb\Collection\Generics\Json;
 use Henzeb\Collection\Generics\Uuid;
 use Henzeb\Collection\LazyTypedCollection;
@@ -37,7 +37,7 @@ class TypedCollectionTest extends TestCase
 
     public function testInvalidGenerics()
     {
-        $this->expectException(InvalidGenericException::class);
+        $this->expectException(MissingTypedCollectionException::class);
 
         new class([]) extends TypedCollection {
             protected function generics(): string|Type|array
@@ -49,7 +49,7 @@ class TypedCollectionTest extends TestCase
 
     public function testInvalidGenericsWithObject()
     {
-        $this->expectException(InvalidGenericException::class);
+        $this->expectException(MissingTypedCollectionException::class);
 
         $this->expectExceptionMessageMatches('/`object`/');
 
@@ -63,7 +63,7 @@ class TypedCollectionTest extends TestCase
 
     public function testInvalidGenericsWhereOneIsValid()
     {
-        $this->expectException(InvalidGenericException::class);
+        $this->expectException(MissingTypedCollectionException::class);
 
         new class([]) extends TypedCollection {
             protected function generics(): string|Type|array
@@ -75,7 +75,7 @@ class TypedCollectionTest extends TestCase
 
     public function testInvalidGenericsWhereOneIsInvalid()
     {
-        $this->expectException(InvalidGenericException::class);
+        $this->expectException(MissingTypedCollectionException::class);
 
         new class([]) extends TypedCollection {
             protected function generics(): string|Type|array
@@ -475,10 +475,11 @@ class TypedCollectionTest extends TestCase
      * @dataProvider providesKeyableTestcases
      */
     public function testKeyValidation(
-        mixed $key,
+        mixed             $key,
         Type|string|array $generics = null,
-        bool $exception = false
-    ): void {
+        bool              $exception = false
+    ): void
+    {
         $key = is_null($key) ? (int)$key : $key;
 
         if ($exception) {
