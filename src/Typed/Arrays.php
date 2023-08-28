@@ -11,7 +11,6 @@ use Henzeb\Collection\TypedCollection;
  */
 class Arrays extends TypedCollection
 {
-
     protected function generics(): Type
     {
         return Type::Array;

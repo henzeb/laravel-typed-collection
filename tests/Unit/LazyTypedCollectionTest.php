@@ -2,6 +2,7 @@
 
 namespace Henzeb\Collection\Tests\Unit;
 
+use Henzeb\Collection\Contracts\DiscardsInvalidTypes;
 use Henzeb\Collection\Enums\Type;
 use Henzeb\Collection\Exceptions\InvalidKeyTypeException;
 use Henzeb\Collection\Exceptions\InvalidTypeException;
@@ -9,6 +10,7 @@ use Henzeb\Collection\Exceptions\MissingGenericsException;
 use Henzeb\Collection\Exceptions\MissingKeyGenericsException;
 use Henzeb\Collection\Exceptions\MissingTypedCollectionException;
 use Henzeb\Collection\Generics\Uuid;
+use Henzeb\Collection\Lazy\Jsons;
 use Henzeb\Collection\Lazy\Strings;
 use Henzeb\Collection\LazyTypedCollection;
 use Henzeb\Collection\Support\GenericsLazyCollection;
@@ -222,6 +224,14 @@ class LazyTypedCollectionTest extends TestCase
         );
     }
 
+    public function testKeys()
+    {
+        $this->assertEquals(
+            Strings::make([1 => 'string', 2 => 'another'])->keys()->toArray(),
+            [1, 2]
+        );
+    }
+
     public function testAllowMapToDictonairy()
     {
         $collection = new class([
@@ -265,5 +275,44 @@ class LazyTypedCollectionTest extends TestCase
                 ]
             ]
         );
+    }
+
+    public function testCasting()
+    {
+        $collection = Jsons::wrap([['regular' => 'array']]);
+
+        $this->assertEquals(json_encode(['regular' => 'array']), $collection->get(0));
+
+        $collection = new class(['string']) extends LazyTypedCollection {
+            public function generics(): string|Type|array
+            {
+                return Type::class;
+            }
+        };
+
+        $this->assertEquals(Type::String, $collection->first());
+
+        $this->expectException(InvalidTypeException::class);
+
+        (new class(['doesNotExist']) extends LazyTypedCollection {
+            public function generics(): string|Type|array
+            {
+                return Type::class;
+            }
+        })->first();
+    }
+
+
+    public function testDiscardsInvalidTypes()
+    {
+        $collection = new class(['test', ['test']]) extends LazyTypedCollection implements DiscardsInvalidTypes {
+            protected function generics(): string|Type|array
+            {
+                return Type::Array;
+            }
+        };
+
+        $this->assertCount(1, $collection);
+        $this->assertEquals(['test'], $collection->first());
     }
 }

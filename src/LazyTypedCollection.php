@@ -5,6 +5,13 @@ namespace Henzeb\Collection;
 use Generator;
 use Henzeb\Collection\Concerns\HasGenericKeys;
 use Henzeb\Collection\Concerns\HasGenerics;
+use Henzeb\Collection\Contracts\DiscardsInvalidTypes;
+use Henzeb\Collection\Exceptions\InvalidKeyGenericException;
+use Henzeb\Collection\Exceptions\InvalidKeyTypeException;
+use Henzeb\Collection\Exceptions\InvalidTypeException;
+use Henzeb\Collection\Exceptions\MissingGenericsException;
+use Henzeb\Collection\Exceptions\MissingKeyGenericsException;
+use Henzeb\Collection\Exceptions\MissingTypedCollectionException;
 use Illuminate\Support\LazyCollection;
 
 /**
@@ -18,6 +25,12 @@ abstract class LazyTypedCollection extends LazyCollection
 {
     use HasGenerics, HasGenericKeys;
 
+    /**
+     * @throws InvalidKeyGenericException
+     * @throws MissingGenericsException
+     * @throws MissingKeyGenericsException
+     * @throws MissingTypedCollectionException
+     */
     public function __construct($source = null)
     {
         $this->validateGenerics();
@@ -27,8 +40,11 @@ abstract class LazyTypedCollection extends LazyCollection
             function () use ($source): Generator {
                 $collection = new LazyCollection($source);
                 foreach ($collection as $key => $item) {
+                    if ($this instanceof DiscardsInvalidTypes && !$this->accepts($item)) {
+                        continue;
+                    }
                     yield $this->validateKeyTypeAndReturn($key)
-                    => $this->validateTypeAndReturn($item);
+                    => $this->castAndValidateTypeAndReturn($item);
                 }
             }
         );
@@ -37,10 +53,11 @@ abstract class LazyTypedCollection extends LazyCollection
     /**
      * @param mixed $item
      * @return mixed
-     * @throws Exceptions\InvalidTypeException
+     * @throws InvalidTypeException
      */
-    private function validateTypeAndReturn(mixed $item): mixed
+    private function castAndValidateTypeAndReturn(mixed $item): mixed
     {
+        $this->castType($item);
         $this->validateType($item);
 
         return $item;
@@ -49,7 +66,7 @@ abstract class LazyTypedCollection extends LazyCollection
     /**
      * @param mixed $item
      * @return mixed
-     * @throws Exceptions\InvalidTypeException
+     * @throws InvalidKeyTypeException
      */
     private function validateKeyTypeAndReturn(mixed $item): mixed
     {
@@ -93,5 +110,10 @@ abstract class LazyTypedCollection extends LazyCollection
         return (new LazyCollection(
             $this
         ))->mapToDictionary($callback);
+    }
+
+    public function keys()
+    {
+        return (new LazyCollection($this))->keys();
     }
 }

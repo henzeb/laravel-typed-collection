@@ -2,6 +2,8 @@
 
 namespace Henzeb\Collection\Concerns;
 
+use Henzeb\Collection\Contracts\CastableGenericType;
+use Henzeb\Collection\Contracts\DiscardsInvalidTypes;
 use Henzeb\Collection\Contracts\GenericType;
 use Henzeb\Collection\Enums\Type;
 use Henzeb\Collection\Exceptions\InvalidTypeException;
@@ -14,7 +16,6 @@ use Illuminate\Support\Arr;
  */
 trait HasGenerics
 {
-
     abstract protected function generics(): string|Type|array;
 
     /**
@@ -54,12 +55,47 @@ trait HasGenerics
         }
     }
 
-    private function validateTypes($items): void
+    private function castTypes(&$items)
     {
         array_walk(
             $items,
-            $this->validateType(...)
+            $this->castType(...)
         );
+    }
+
+    /**
+     * @param $items
+     * @return void
+     * @throws InvalidTypeException
+     */
+    private function validateTypes(&$items): void
+    {
+        $discardTypes = $this instanceof DiscardsInvalidTypes;
+
+        foreach ($items as $key => $item) {
+            if (!$discardTypes) {
+                $this->validateType($item);
+                continue;
+            }
+
+            if (!$this->accepts($item)) {
+                unset($items[$key]);
+            }
+        }
+    }
+
+    private function castType(mixed &$item): void
+    {
+        $generics = Arr::wrap($this->generics());
+        foreach ($generics as $generic) {
+            if (is_string($generic) && enum_exists($generic)) {
+                $item = $generic::tryFrom($item) ?? $item;
+            }
+
+            if (is_a($generic, CastableGenericType::class, true)) {
+                $item = $generic::castType($item);
+            }
+        }
     }
 
     /**
@@ -99,9 +135,8 @@ trait HasGenerics
             $type = Type::tryFrom($type);
         }
 
-        return $type->equals(
-                Type::fromValue($item),
-            ) || $type->equals(Type::Mixed);
+        return $type->equals(Type::fromValue($item))
+            || $type->equals(Type::Mixed);
     }
 
     public function accepts(mixed $item): bool

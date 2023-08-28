@@ -3,11 +3,30 @@
 namespace Henzeb\Collection\Tests\Unit\Generics;
 
 use Closure;
+use Generator;
 use Henzeb\Collection\Generics\Json;
+use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Contracts\Support\Jsonable;
+use JsonSerializable;
 use PHPUnit\Framework\TestCase;
+use Throwable;
 
 class JsonTest extends TestCase
 {
+    public function testMemoization()
+    {
+        $useValidate = !function_exists('json_validate'); // false
+        $this->useNative($useValidate); // set to false
+
+        try {
+            Json::matchesType(json_encode([]));
+        } catch (Throwable) {
+        }
+
+        $this->assertNativeSet($useValidate);
+
+    }
+
     public function testJsonValidates(): void
     {
         $this->useNative(false);
@@ -104,13 +123,63 @@ class JsonTest extends TestCase
         );
     }
 
-    public function useNative(?bool $useNative)
+    public function testTypecast()
+    {
+        $expected = json_encode(['regular' => 'array']);
+        $this->assertEquals($expected, Json::castType(['regular' => 'array']));
+        $this->assertEquals($expected, Json::castType(collect(['regular' => 'array'])));
+
+        $this->assertEquals($expected, Json::castType(
+            new class implements Arrayable {
+                public function toArray()
+                {
+                    return ['regular' => 'array'];
+                }
+            }
+        ));
+
+        $this->assertEquals($expected, Json::castType(
+            new class implements JsonSerializable {
+                public function jsonSerialize(): mixed
+                {
+                    return ['regular' => 'array'];
+                }
+            }
+        ));
+
+        $this->assertEquals($expected, Json::castType(
+            new class implements Jsonable {
+                public function toJson($options = 0): string
+                {
+                    return json_encode(['regular' => 'array']);
+                }
+            }
+        ));
+
+
+        $this->assertEquals($expected, Json::castType(
+            (function (): Generator {
+                yield 'regular' => 'array';
+            })()
+        ));
+    }
+
+    public function useNative(?bool $useJsonValidate)
     {
         Closure::bind(function (?bool $useNative) {
-            self::$native = $useNative;
+            self::$useJsonValidate = $useNative;
         }, null, Json::class)(
-            $useNative
+            $useJsonValidate
         );
+    }
+
+    public function assertNativeSet(bool $expected): void
+    {
+        $native = Closure::bind(function () {
+            return self::$useJsonValidate;
+        }, null, Json::class)();
+
+        $this->assertEquals($expected, $native);
     }
 
     protected function tearDown(): void

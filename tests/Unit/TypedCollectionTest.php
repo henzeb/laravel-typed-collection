@@ -2,6 +2,8 @@
 
 namespace Henzeb\Collection\Tests\Unit;
 
+use Henzeb\Collection\Contracts\CastableGenericType;
+use Henzeb\Collection\Contracts\DiscardsInvalidTypes;
 use Henzeb\Collection\Contracts\GenericType;
 use Henzeb\Collection\Enums\Type;
 use Henzeb\Collection\Exceptions\InvalidKeyGenericException;
@@ -14,6 +16,7 @@ use Henzeb\Collection\Generics\Json;
 use Henzeb\Collection\Generics\Uuid;
 use Henzeb\Collection\LazyTypedCollection;
 use Henzeb\Collection\Support\GenericsCollection;
+use Henzeb\Collection\Typed\Jsons;
 use Henzeb\Collection\Typed\Strings;
 use Henzeb\Collection\TypedCollection;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -224,6 +227,23 @@ class TypedCollectionTest extends TestCase
                 return ['string'];
             }
         })->prepend($this);
+    }
+
+    public function testPrependFailOnKey()
+    {
+        $this->expectException(InvalidKeyTypeException::class);
+
+        (new class() extends TypedCollection {
+            protected function generics(): string|Type|array
+            {
+                return ['string'];
+            }
+
+            protected function keyGenerics(): Type
+            {
+                return Type::Int;
+            }
+        })->prepend('string', 'anotherstring');
     }
 
     public function testPrependSuccess()
@@ -577,6 +597,14 @@ class TypedCollectionTest extends TestCase
         );
     }
 
+    public function testKeys()
+    {
+        $this->assertEquals(
+            Strings::make([1 => 'string', 2 => 'another'])->keys()->toArray(),
+            [1, 2]
+        );
+    }
+
     public function testAllowMapToDictonairy()
     {
         $collection = new class([
@@ -620,5 +648,84 @@ class TypedCollectionTest extends TestCase
                 ]
             ]
         );
+    }
+
+    public function testCasting()
+    {
+        $collection = Jsons::wrap([['regular' => 'array']]);
+
+        $this->assertEquals(json_encode(['regular' => 'array']), $collection->get(0));
+
+        $collection->add(['another' => 'array']);
+
+        $this->assertEquals(json_encode(['another' => 'array']), $collection->get(1));
+
+        $collection->push(['third' => 'array'], ['fourth' => 'array']);
+        $this->assertEquals(json_encode(['third' => 'array']), $collection->get(2));
+        $this->assertEquals(json_encode(['fourth' => 'array']), $collection->get(3));
+
+        $collection->prepend(['fifth' => 'array']);
+        $this->assertEquals(json_encode(['fifth' => 'array']), $collection->get(0));
+
+        $collection = new class extends TypedCollection {
+            public function generics(): string|Type|array
+            {
+                return Type::class;
+            }
+        };
+
+        $collection->add('string');
+
+        $this->assertEquals(Type::String, $collection->first());
+
+        $this->expectException(InvalidTypeException::class);
+        $collection->add('doesNotExist');
+    }
+
+    public function testCastingToNull()
+    {
+        $collection = new class extends TypedCollection {
+            protected function generics(): string|Type|array
+            {
+                return (
+                new class implements CastableGenericType {
+                    public static function castType(mixed $item): mixed
+                    {
+                        return null;
+                    }
+
+                    public static function matchesType(mixed $item): bool
+                    {
+                        return $item === null;
+                    }
+                }
+                )::class;
+            }
+        };
+
+        $collection->add('string');
+        $this->assertNull($collection->first());
+    }
+
+    public function testDiscardsInvalidTypes()
+    {
+        $collection = new class(['test', ['test']]) extends TypedCollection implements DiscardsInvalidTypes {
+            protected function generics(): string|Type|array
+            {
+                return Type::Array;
+            }
+        };
+
+        $this->assertCount(1, $collection);
+        $this->assertEquals(['test'], $collection->first());
+
+        $collection->add(12);
+        $collection->add(['hello']);
+
+        $collection->push('test', true, 12, ['12']);
+
+        $collection->prepend('data');
+
+        $this->assertCount(3, $collection);
     }
 }

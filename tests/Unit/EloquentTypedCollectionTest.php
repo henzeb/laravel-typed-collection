@@ -2,8 +2,11 @@
 
 namespace Henzeb\Collection\Tests\Unit;
 
+use Henzeb\Collection\EloquentTypedCollection;
+use Henzeb\Collection\Enums\Type;
 use Henzeb\Collection\Tests\Stubs\Eloquent\User;
 use Henzeb\Collection\Tests\Stubs\Eloquent\Users;
+use Henzeb\Collection\Typed\Arrays;
 use Illuminate\Support\Facades\File;
 use Orchestra\Testbench\TestCase;
 
@@ -61,6 +64,27 @@ class EloquentTypedCollectionTest extends TestCase
         $collection = $collection->fresh();
 
         $this->assertEquals('West', $collection->get(2)->last_name);
+    }
+
+    public function testToBase()
+    {
+        $collection = new class([['regular' => 'array']]) extends EloquentTypedCollection {
+            protected function generics(): string|Type|array
+            {
+                return Type::Array;
+            }
+
+            protected function baseClass(): string
+            {
+                return Arrays::class;
+            }
+        };
+
+        $this->assertInstanceOf(Arrays::class, $collection->toBase());
+
+        $mapped = $collection->map(fn(array $array) => json_encode($array))->toArray();
+
+        $this->assertEquals([json_encode(['regular' => 'array'])], $mapped);
     }
 
     protected function tearDown(): void
