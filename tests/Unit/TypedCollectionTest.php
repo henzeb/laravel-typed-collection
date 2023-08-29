@@ -498,8 +498,7 @@ class TypedCollectionTest extends TestCase
         mixed             $key,
         Type|string|array $generics = null,
         bool              $exception = false
-    ): void
-    {
+    ): void {
         $key = is_null($key) ? (int)$key : $key;
 
         if ($exception) {
@@ -677,6 +676,8 @@ class TypedCollectionTest extends TestCase
         $collection->add('string');
 
         $this->assertEquals(Type::String, $collection->first());
+
+        $collection->add(Type::String);
 
         $this->expectException(InvalidTypeException::class);
         $collection->add('doesNotExist');

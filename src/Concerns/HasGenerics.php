@@ -89,7 +89,9 @@ trait HasGenerics
         $generics = Arr::wrap($this->generics());
         foreach ($generics as $generic) {
             if (is_string($generic) && enum_exists($generic)) {
-                $item = $generic::tryFrom($item) ?? $item;
+                if (is_string($item) || is_int($item)) {
+                    $item = $generic::tryFrom($item) ?? $item;
+                }
             }
 
             if (is_a($generic, CastableGenericType::class, true)) {
