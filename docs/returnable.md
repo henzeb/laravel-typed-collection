@@ -134,6 +134,9 @@ Using the `lazy()` method you will receive the default `LazyCollection`,
 If that's not what you want, you can specify the `lazyClass`.
 
 ````php
+use Henzeb\Collection\LazyTypedCollection;
+use Henzeb\Collection\Enums\Type;
+
 class PostCollection extends TypedCollection
 {
     protected function generics(): string|Type|array
@@ -168,6 +171,32 @@ class PostCollection extends TypedCollection
 }
 
 (new PostCollection())->lazy(); // now returns a LazyPostCollection instance
+````
+
+### The toBase method
+
+The reverse is also possible. Laravel does not provide a `toBase` method in the
+lazy collections, but you may need it, for example with `ResourceCollections`.
+
+By default it uses a standard `Collection`, but you can specify a
+`TypedCollection`.
+
+````php
+use Henzeb\Collection\LazyTypedCollection;
+use Henzeb\Collection\Enums\Type;
+
+class LazyPostCollection extends LazyTypedCollection
+{
+    protected function generics(): string|Type|array
+    {
+        return Post::class;
+    }
+
+    protected function baseClass(): string
+    {
+        return PostCollection::class;
+    }
+}
 ````
 
 ## Discarding Invalid Types

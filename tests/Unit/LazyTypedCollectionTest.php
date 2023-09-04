@@ -14,6 +14,8 @@ use Henzeb\Collection\Lazy\Jsons;
 use Henzeb\Collection\Lazy\Strings;
 use Henzeb\Collection\LazyTypedCollection;
 use Henzeb\Collection\Support\GenericsLazyCollection;
+use Illuminate\Support\Collection;
+use Illuminate\Support\LazyCollection;
 use PHPUnit\Framework\TestCase;
 
 class LazyTypedCollectionTest extends TestCase
@@ -127,8 +129,7 @@ class LazyTypedCollectionTest extends TestCase
         mixed             $key,
         Type|string|array $generics = null,
         bool              $exception = false
-    ): void
-    {
+    ): void {
         $key = is_null($key) ? (int)$key : $key;
 
         if ($exception) {
@@ -314,5 +315,40 @@ class LazyTypedCollectionTest extends TestCase
 
         $this->assertCount(1, $collection);
         $this->assertEquals(['test'], $collection->first());
+    }
+
+    public function testToBase(): void
+    {
+        $collection = new class extends LazyTypedCollection {
+            protected function generics(): string|Type|array
+            {
+                return Type::String;
+            }
+        };
+
+        $this->assertInstanceOf(LazyCollection::class, $collection->toBase());
+
+        $collection = new class extends LazyTypedCollection {
+            protected function generics(): string|Type|array
+            {
+                return Type::String;
+            }
+        };
+
+        $this->assertInstanceOf(LazyCollection::class, $collection->toBase());
+
+        $collection = new class extends LazyTypedCollection {
+            protected function generics(): string|Type|array
+            {
+                return Type::String;
+            }
+
+            protected function baseClass(): string
+            {
+                return Collection::class;
+            }
+        };
+
+        $this->assertInstanceOf(Collection::class, $collection->toBase());
     }
 }

@@ -7,6 +7,7 @@ use Henzeb\Collection\Enums\Type;
 use Henzeb\Collection\Tests\Stubs\Eloquent\User;
 use Henzeb\Collection\Tests\Stubs\Eloquent\Users;
 use Henzeb\Collection\Typed\Arrays;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Orchestra\Testbench\TestCase;
 
@@ -66,7 +67,19 @@ class EloquentTypedCollectionTest extends TestCase
         $this->assertEquals('West', $collection->get(2)->last_name);
     }
 
-    public function testToBase()
+    public function testTobase()
+    {
+        $collection = new class extends EloquentTypedCollection {
+            protected function generics(): string|Type|array
+            {
+                return Type::Array;
+            }
+        };
+
+        $this->assertInstanceOf(Collection::class, $collection->toBase());
+    }
+
+    public function testToBaseWithGivenClass()
     {
         $collection = new class([['regular' => 'array']]) extends EloquentTypedCollection {
             protected function generics(): string|Type|array

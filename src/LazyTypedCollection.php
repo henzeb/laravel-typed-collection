@@ -3,6 +3,7 @@
 namespace Henzeb\Collection;
 
 use Generator;
+use Henzeb\Collection\Concerns\HasBaseClass;
 use Henzeb\Collection\Concerns\HasGenericKeys;
 use Henzeb\Collection\Concerns\HasGenerics;
 use Henzeb\Collection\Contracts\DiscardsInvalidTypes;
@@ -23,7 +24,7 @@ use Illuminate\Support\LazyCollection;
  */
 abstract class LazyTypedCollection extends LazyCollection
 {
-    use HasGenerics, HasGenericKeys;
+    use HasGenerics, HasGenericKeys, HasBaseClass;
 
     /**
      * @throws InvalidKeyGenericException
