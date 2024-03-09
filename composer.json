@@ -27,20 +27,19 @@
     ],
     "suggest": {
         "ramsey/uuid": "^4.2.2",
-        "symfony/uid": "^5.1|^6.3"
+        "symfony/uid": "^5.1|^6.3|^7"
     },
     "require": {
         "php": "^8.1",
-        "illuminate/collections": "^9.0.0|^10"
+        "illuminate/collections": "^10|^11"
     },
     "require-dev": {
         "calebporzio/sushi": "^2.4",
-        "infection/infection": "^0.26.19",
-        "orchestra/testbench": "^v7.6.0|^8.0",
+        "orchestra/testbench": "^8.0|^9",
         "phpstan/phpstan": "^1.4",
         "phpunit/phpunit": "^9.6.6|^10",
         "ramsey/uuid": "^4.2.2",
-        "symfony/uid": "^5.1|^6.3"
+        "symfony/uid": "^5.1|^6.3|^7"
     },
     "autoload": {
         "psr-4": {
