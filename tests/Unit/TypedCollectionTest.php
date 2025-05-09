@@ -495,10 +495,11 @@ class TypedCollectionTest extends TestCase
      * @dataProvider providesKeyableTestcases
      */
     public function testKeyValidation(
-        mixed             $key,
-        Type|string|array $generics = null,
-        bool              $exception = false
-    ): void {
+        mixed                  $key,
+        Type|string|array|null $generics = null,
+        bool                   $exception = false
+    ): void
+    {
         $key = is_null($key) ? (int)$key : $key;
 
         if ($exception) {
