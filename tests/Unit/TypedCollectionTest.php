@@ -730,4 +730,36 @@ class TypedCollectionTest extends TestCase
 
         $this->assertCount(3, $collection);
     }
+
+    public function testChunkReturnsNewCollectionWithoutKeys()
+    {
+        $fruits = new class(['first' => 'apple', 'second' => 'banana', 'third' => 'cherry']) extends TypedCollection {
+            protected function generics(): string|Type|array
+            {
+                return Type::String;
+            }
+        };
+
+        $chunks = $fruits->chunk(2, false);
+
+        $firstChunk = $chunks->first();
+        $this->assertInstanceOf($fruits::class, $firstChunk);
+        $this->assertSame(0, $firstChunk->keys()->first());
+    }
+
+    public function testChunkReturnsNewCollectionWithKeys()
+    {
+        $fruits = new class(['first' => 'apple', 'second' => 'banana', 'third' => 'cherry']) extends TypedCollection {
+            protected function generics(): string|Type|array
+            {
+                return Type::String;
+            }
+        };
+
+        $chunks = $fruits->chunk(2);
+
+        $firstChunk = $chunks->first();
+        $this->assertInstanceOf($fruits::class, $firstChunk);
+        $this->assertSame('first', $firstChunk->keys()->first());
+    }
 }
