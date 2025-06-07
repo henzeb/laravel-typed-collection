@@ -103,10 +103,10 @@ trait OverridesMethods
         return new $lazyClass($this->all());
     }
 
-    public function chunk($size)
+    public function chunk($size, $preserveKeys = true)
     {
         return $this->collect()
-            ->chunk($size)
+            ->chunk($size, $preserveKeys)
             ->mapInto(static::class);
     }
 
