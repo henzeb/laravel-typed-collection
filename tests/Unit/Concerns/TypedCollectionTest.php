@@ -1,7 +1,5 @@
 <?php
 
-namespace Henzeb\Collection\Tests\Unit\Concerns;
-
 use Henzeb\Collection\Concerns\TypedCollection;
 use Henzeb\Collection\EloquentTypedCollection;
 use Henzeb\Collection\Exceptions\InvalidTypedCollectionException;
@@ -13,84 +11,76 @@ use Henzeb\Collection\Typed\Strings;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection as BaseCollection;
 use Illuminate\Support\LazyCollection;
-use Orchestra\Testbench\TestCase;
 
-class TypedCollectionTest extends TestCase
+class TestTypedCollectionClass
 {
     use TypedCollection;
-
+    
     public $typedCollection = null;
-
-    public function testUserModelAllShouldReturnUsersCollection()
-    {
-        $collection = User::all();
-
-        $this->assertInstanceOf(Users::class, $collection);
-        $this->assertInstanceOf(EloquentTypedCollection::class, $collection);
-        $this->assertInstanceOf(Collection::class, $collection);
-
-        $this->assertCount(3, $collection);
-        $this->assertEquals(1, $collection->first()->id);
-        $this->assertEquals('Wally', $collection->get(1)->name);
-        $this->assertEquals('Allen-West', $collection->get(2)->last_name);
-    }
-
-
-    public function testShouldThrowErrorWhenInvalidCollectionType()
-    {
-        $this->typedCollection = self::class;
-        $this->expectException(InvalidTypedCollectionException::class);
-        $this->expectExceptionMessageMatches('/`TypedCollectionTest`/');
-
-        $this->newCollection();
-    }
-
-    public function testShouldThrowErrorWhenNotTypedCollection()
-    {
-        $this->typedCollection = BaseCollection::class;
-        $this->expectException(InvalidTypedCollectionException::class);
-        $this->expectExceptionMessageMatches('/`TypedCollectionTest`/');
-
-        $this->newCollection();
-    }
-
-    public function testShouldThrowErrorWhenNotEloquentTypedCollection()
-    {
-        $this->typedCollection = Collection::class;
-        $this->expectException(InvalidTypedCollectionException::class);
-        $this->expectExceptionMessageMatches('/`TypedCollectionTest`/');
-
-        $this->newCollection();
-    }
-
-    public function testShouldThrowErrorWhenTypedLazyCollection()
-    {
-        $this->typedCollection = LazyCollection::class;
-        $this->expectException(InvalidTypedCollectionException::class);
-        $this->expectExceptionMessageMatches('/`TypedCollectionTest`/');
-
-        $this->newCollection();
-    }
-
-    public function testShouldThrowErrorWhenTypedCollectionOmitted()
-    {
-        $this->expectException(MissingTypedCollectionException::class);
-        $this->expectExceptionMessageMatches('/`TypedCollectionTest`/');
-
-        $this->newCollection();
-    }
-
-    public function testShouldReturnTypedCollection()
-    {
-        $this->typedCollection = Strings::class;
-
-        $this->assertInstanceOf(Strings::class, $this->newCollection());
-    }
-
-    public function testShouldReturnLazyTypedCollection()
-    {
-        $this->typedCollection = Integers::class;
-
-        $this->assertInstanceOf(Integers::class, $this->newCollection());
-    }
 }
+
+test('user model all should return users collection', function () {
+    $collection = User::all();
+
+    expect($collection)->toBeInstanceOf(Users::class);
+    expect($collection)->toBeInstanceOf(EloquentTypedCollection::class);
+    expect($collection)->toBeInstanceOf(Collection::class);
+
+    expect($collection)->toHaveCount(3);
+    expect($collection->first()->id)->toBe(1);
+    expect($collection->get(1)->name)->toBe('Wally');
+    expect($collection->get(2)->last_name)->toBe('Allen-West');
+});
+
+test('should throw error when invalid collection type', function () {
+    $testClass = new TestTypedCollectionClass();
+    $testClass->typedCollection = TestTypedCollectionClass::class;
+    
+    expect(fn() => $testClass->newCollection())
+        ->toThrow(InvalidTypedCollectionException::class, 'TestTypedCollectionClass');
+});
+
+test('should throw error when not typed collection', function () {
+    $testClass = new TestTypedCollectionClass();
+    $testClass->typedCollection = BaseCollection::class;
+    
+    expect(fn() => $testClass->newCollection())
+        ->toThrow(InvalidTypedCollectionException::class, 'TestTypedCollectionClass');
+});
+
+test('should throw error when not eloquent typed collection', function () {
+    $testClass = new TestTypedCollectionClass();
+    $testClass->typedCollection = Collection::class;
+    
+    expect(fn() => $testClass->newCollection())
+        ->toThrow(InvalidTypedCollectionException::class, 'TestTypedCollectionClass');
+});
+
+test('should throw error when typed lazy collection', function () {
+    $testClass = new TestTypedCollectionClass();
+    $testClass->typedCollection = LazyCollection::class;
+    
+    expect(fn() => $testClass->newCollection())
+        ->toThrow(InvalidTypedCollectionException::class, 'TestTypedCollectionClass');
+});
+
+test('should throw error when typed collection omitted', function () {
+    $testClass = new TestTypedCollectionClass();
+    
+    expect(fn() => $testClass->newCollection())
+        ->toThrow(MissingTypedCollectionException::class, 'TestTypedCollectionClass');
+});
+
+test('should return typed collection', function () {
+    $testClass = new TestTypedCollectionClass();
+    $testClass->typedCollection = Strings::class;
+
+    expect($testClass->newCollection())->toBeInstanceOf(Strings::class);
+});
+
+test('should return lazy typed collection', function () {
+    $testClass = new TestTypedCollectionClass();
+    $testClass->typedCollection = Integers::class;
+
+    expect($testClass->newCollection())->toBeInstanceOf(Integers::class);
+});

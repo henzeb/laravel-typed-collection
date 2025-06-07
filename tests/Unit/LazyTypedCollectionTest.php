@@ -1,7 +1,5 @@
 <?php
 
-namespace Henzeb\Collection\Tests\Unit;
-
 use Henzeb\Collection\Contracts\DiscardsInvalidTypes;
 use Henzeb\Collection\Enums\Type;
 use Henzeb\Collection\Exceptions\InvalidKeyTypeException;
@@ -16,340 +14,293 @@ use Henzeb\Collection\LazyTypedCollection;
 use Henzeb\Collection\Support\GenericsLazyCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
-use PHPUnit\Framework\TestCase;
+test('validates invalid generics', function () {
+    expect(fn() => new class extends LazyTypedCollection {
+        protected function generics(): string|Type|array
+        {
+            return ['failure'];
+        }
+    })->toThrow(MissingTypedCollectionException::class);
+});
 
-class LazyTypedCollectionTest extends TestCase
+test('validates empty generics', function () {
+    expect(fn() => new class extends LazyTypedCollection {
+        protected function generics(): string|Type|array
+        {
+            return [];
+        }
+    })->toThrow(MissingGenericsException::class);
+});
+
+test('validates generics', function () {
+    new class extends LazyTypedCollection {
+        protected function generics(): string|Type|array
+        {
+            return Type::String;
+        }
+    };
+    
+    expect(true)->toBeTrue();
+});
+
+test('does not validate types on new instance', function () {
+    new class([$this]) extends LazyTypedCollection {
+        protected function generics(): string|Type|array
+        {
+            return Type::String;
+        }
+    };
+    
+    expect(true)->toBeTrue(); // No exception should be thrown
+});
+
+test('does validate types when running', function () {
+    $lazy = new class([$this]) extends LazyTypedCollection {
+        protected function generics(): string|Type|array
+        {
+            return Type::String;
+        }
+    };
+
+    expect(fn() => $lazy->each(fn() => true))
+        ->toThrow(InvalidTypeException::class);
+});
+
+test('does not validate type if not fetched', function () {
+    $lazy = new class(['myKey' => 'string', $this]) extends LazyTypedCollection {
+        protected function generics(): string|Type|array
+        {
+            return Type::String;
+        }
+    };
+
+    foreach ($lazy as $key => $item) {
+        expect($key)->toBe('myKey');
+        expect($item)->toBe('string');
+        break;
+    }
+});
+
+function getKeyableTestcases(): array
 {
-    public function testValidatesInvalidGenerics()
-    {
-        $this->expectException(MissingTypedCollectionException::class);
+    return [
+        'int' => [0],
+        'numeric' => ['12'],
+        'String' => ['hello'],
+        'Bool' => [true],
+        'Null' => [null],
+        'Uuid' => [\Ramsey\Uuid\Uuid::uuid4()->toString(), Uuid::class],
+        'mixed-int' => [1, [Type::Int, Type::String]],
+        'mixed-string' => ['1', [Type::Int, Type::String]],
+        'int-fail' => [0, Type::String, true],
+        'numeric-fail' => ['12', Type::String, true],
+        'String-fail' => ['hello', Type::Bool, true],
+        'Bool-fail' => [true, Type::String, true],
+        'Null-fail' => [null, Type::String, true],
+        'Uuid-fail' => ['ohoh', Uuid::class, true]
+    ];
+}
 
-        new class extends LazyTypedCollection {
-            protected function generics(): string|Type|array
-            {
-                return ['failure'];
-            }
-        };
-    }
+test('key validation', function (mixed $key, Type|string|array|null $generics = null, bool $exception = false) {
+    $key = is_null($key) ? (int)$key : $key;
 
-    public function testValidatesEmptyGenerics()
-    {
-        $this->expectException(MissingGenericsException::class);
-
-        new class extends LazyTypedCollection {
-            protected function generics(): string|Type|array
-            {
-                return [];
-            }
-        };
-    }
-
-    public function testValidatesGenerics()
-    {
-        $this->expectNotToPerformAssertions();
-
-        new class extends LazyTypedCollection {
-            protected function generics(): string|Type|array
-            {
-                return Type::String;
-            }
-        };
-    }
-
-    public function testDoesNotValidateTypesOnNewInstance()
-    {
-        $this->expectNotToPerformAssertions();
-
-        new class([$this]) extends LazyTypedCollection {
-            protected function generics(): string|Type|array
-            {
-                return Type::String;
-            }
-        };
-    }
-
-    public function testDoesValidateTypesWhenRunning()
-    {
-        $this->expectException(InvalidTypeException::class);
-        $lazy = new class([$this]) extends LazyTypedCollection {
-            protected function generics(): string|Type|array
-            {
-                return Type::String;
-            }
-        };
-
-        $lazy->each(fn() => true);
-    }
-
-    public function testDoesNotValidateTypeIfNotFetched()
-    {
-        $lazy = new class(['myKey' => 'string', $this]) extends LazyTypedCollection {
-            protected function generics(): string|Type|array
-            {
-                return Type::String;
-            }
-        };
-
-        foreach ($lazy as $key => $item) {
-            $this->assertSame('myKey', $key);
-            $this->assertEquals('string', $item);
-            break;
-        }
-    }
-
-    public static function providesKeyableTestcases(): array
-    {
-        return [
-            'int' => [0],
-            'numeric' => ['12'],
-            'String' => ['hello'],
-            'Bool' => [true],
-            'Null' => [null],
-            'Uuid' => [\Ramsey\Uuid\Uuid::uuid4()->toString(), Uuid::class],
-            'mixed-int' => [1, [Type::Int, Type::String]],
-            'mixed-string' => ['1', [Type::Int, Type::String]],
-            'int-fail' => [0, Type::String, true],
-            'numeric-fail' => ['12', Type::String, true],
-            'String-fail' => ['hello', Type::Bool, true],
-            'Bool-fail' => [true, Type::String, true],
-            'Null-fail' => [null, Type::String, true],
-            'Uuid-fail' => ['ohoh', Uuid::class, true]
-        ];
-    }
-
-    /**
-     * @param mixed $key
-     * @param Type|string|array|null $generics
-     * @param bool $exception
-     * @return void
-     *
-     * @dataProvider providesKeyableTestcases
-     */
-    public function testKeyValidation(
-        mixed                  $key,
-        Type|string|array|null $generics = null,
-        bool                   $exception = false
-    ): void
-    {
-        $key = is_null($key) ? (int)$key : $key;
-
-        if ($exception) {
-            $this->expectException(InvalidKeyTypeException::class);
-        }
-
+    if ($exception) {
+        expect(function() use ($key, $generics) {
+            $collection = new GenericsLazyCollection(
+                [$key => 'world'],
+                Type::String,
+                $generics,
+            );
+            $collection->all();
+        })->toThrow(InvalidKeyTypeException::class);
+    } else {
         $collection = new GenericsLazyCollection(
             [$key => 'world'],
             Type::String,
             $generics,
         );
 
-        $this->assertEquals(
-            [$key => 'world'],
-            $collection->all()
-        );
+        expect($collection->all())->toBe([$key => 'world']);
     }
+})->with(getKeyableTestcases());
 
-    public function testMissingKeyGenerics()
-    {
-        $this->expectException(MissingKeyGenericsException::class);
-        new class extends LazyTypedCollection {
-            protected function generics(): string|Type|array
-            {
-                return Type::String;
-            }
-
-            protected function keyGenerics(): string|Type|array
-            {
-                return [];
-            }
-        };
-    }
-
-    public function testAllowChunks(): void
-    {
-        $collection = new class(['hello', 'world', '!']) extends LazyTypedCollection {
-            protected function generics(): Type
-            {
-                return Type::String;
-            }
-        };
-
-        $chunks = $collection->chunk(2);
-
-        $this->assertCount(2, $chunks);
-
-        foreach ($chunks as $chunk) {
-            $this->assertInstanceOf($collection::class, $chunk);
+test('missing key generics', function () {
+    expect(fn() => new class extends LazyTypedCollection {
+        protected function generics(): string|Type|array
+        {
+            return Type::String;
         }
 
-        $this->assertSame(['hello', 'world'], $chunks->first()->all());
-        $this->assertSame([2 => '!'], $chunks->last()->all());
+        protected function keyGenerics(): string|Type|array
+        {
+            return [];
+        }
+    })->toThrow(MissingKeyGenericsException::class);
+});
+
+test('allow chunks', function () {
+    $collection = new class(['hello', 'world', '!']) extends LazyTypedCollection {
+        protected function generics(): Type
+        {
+            return Type::String;
+        }
+    };
+
+    $chunks = $collection->chunk(2);
+
+    expect($chunks)->toHaveCount(2);
+
+    foreach ($chunks as $chunk) {
+        expect($chunk)->toBeInstanceOf($collection::class);
     }
 
-    public function testAllowChunkWhile(): void
-    {
-        $collection = new class(['hello', 'world', '!']) extends LazyTypedCollection {
-            protected function generics(): Type
-            {
-                return Type::String;
-            }
-        };
+    expect($chunks->first()->all())->toBe(['hello', 'world']);
+    expect($chunks->last()->all())->toBe([2 => '!']);
+});
 
-        $chunks = $collection->chunkWhile(fn() => false)->all();
+test('allow chunk while', function () {
+    $collection = new class(['hello', 'world', '!']) extends LazyTypedCollection {
+        protected function generics(): Type
+        {
+            return Type::String;
+        }
+    };
 
-        $this->assertCount(3, $chunks);
+    $chunks = $collection->chunkWhile(fn() => false)->all();
 
-        foreach ($chunks as $chunk) {
-            $this->assertInstanceOf($collection::class, $chunk);
+    expect($chunks)->toHaveCount(3);
+
+    foreach ($chunks as $chunk) {
+        expect($chunk)->toBeInstanceOf($collection::class);
+    }
+
+    expect($chunks[0]->all())->toBe(['hello']);
+    expect($chunks[1]->all())->toBe([1 => 'world']);
+    expect($chunks[2]->all())->toBe([2 => '!']);
+});
+
+test('allow mapping', function () {
+    expect(Strings::make(['string', 'another'])->map(fn(string $string) => $string === 'string')->toArray())
+        ->toBe([true, false]);
+});
+
+test('allow with keys', function () {
+    expect(Strings::make(['string', 'another'])->mapWithKeys(
+        fn(string $string, int $key) => [$key + 1 => $string === 'string']
+    )->toArray())->toBe([1 => true, 2 => false]);
+});
+
+test('keys', function () {
+    expect(Strings::make([1 => 'string', 2 => 'another'])->keys()->toArray())
+        ->toBe([1, 2]);
+});
+
+test('allow map to dictionary', function () {
+    $collection = new class([
+        [
+            'name' => 'John Doe',
+            'department' => 'Sales',
+        ],
+        [
+            'name' => 'Jane Doe',
+            'department' => 'Sales',
+        ],
+        [
+            'name' => 'Johnny Doe',
+            'department' => 'Marketing',
+        ]
+    ]) extends LazyTypedCollection {
+        protected function generics(): Type
+        {
+            return Type::Array;
         }
 
-        $this->assertSame(['hello'], $chunks[0]->all());
-        $this->assertSame([1 => 'world'], $chunks[1]->all());
-        $this->assertSame([2 => '!'], $chunks[2]->all());
-    }
+        protected function keyGenerics(): string|Type|array
+        {
+            return Type::Int;
+        }
+    };
 
-    public function testAllowMapping()
-    {
-        $this->assertEquals(
-            Strings::make(['string', 'another'])->map(fn(string $string) => $string === 'string')->toArray(),
-            [true, false]
-        );
-    }
+    expect($collection->mapToDictionary(
+        function (array $item) {
+            return [$item['department'] => $item['name']];
+        }
+    )->toArray())->toBe([
+        'Sales' => [
+            'John Doe',
+            'Jane Doe'
+        ],
+        'Marketing' => [
+            'Johnny Doe'
+        ]
+    ]);
+});
 
-    public function testAllowWithKeys()
-    {
-        $this->assertEquals(
-            Strings::make(['string', 'another'])->mapWithKeys(
-                fn(string $string, int $key) => [$key + 1 => $string === 'string']
-            )->toArray(),
-            [1 => true, 2 => false]
-        );
-    }
+test('casting', function () {
+    $collection = Jsons::wrap([['regular' => 'array']]);
 
-    public function testKeys()
-    {
-        $this->assertEquals(
-            Strings::make([1 => 'string', 2 => 'another'])->keys()->toArray(),
-            [1, 2]
-        );
-    }
+    expect($collection->get(0))->toBe(json_encode(['regular' => 'array']));
 
-    public function testAllowMapToDictonairy()
-    {
-        $collection = new class([
-            [
-                'name' => 'John Doe',
-                'department' => 'Sales',
-            ],
-            [
-                'name' => 'Jane Doe',
-                'department' => 'Sales',
-            ],
-            [
-                'name' => 'Johnny Doe',
-                'department' => 'Marketing',
-            ]
-        ]) extends LazyTypedCollection {
-            protected function generics(): Type
-            {
-                return Type::Array;
-            }
+    $collection = new class(['string']) extends LazyTypedCollection {
+        public function generics(): string|Type|array
+        {
+            return Type::class;
+        }
+    };
 
-            protected function keyGenerics(): string|Type|array
-            {
-                return Type::Int;
-            }
-        };
+    expect($collection->first())->toBe(Type::String);
 
-        $this->assertEquals(
-            $collection->mapToDictionary(
-                function (array $item) {
-                    return [$item['department'] => $item['name']];
-                }
-            )->toArray(),
-            [
-                'Sales' => [
-                    'John Doe',
-                    'Jane Doe'
-                ],
-                'Marketing' => [
-                    'Johnny Doe'
-                ]
-            ]
-        );
-    }
-
-    public function testCasting()
-    {
-        $collection = Jsons::wrap([['regular' => 'array']]);
-
-        $this->assertEquals(json_encode(['regular' => 'array']), $collection->get(0));
-
-        $collection = new class(['string']) extends LazyTypedCollection {
-            public function generics(): string|Type|array
-            {
-                return Type::class;
-            }
-        };
-
-        $this->assertEquals(Type::String, $collection->first());
-
-        $this->expectException(InvalidTypeException::class);
-
-        (new class(['doesNotExist']) extends LazyTypedCollection {
-            public function generics(): string|Type|array
-            {
-                return Type::class;
-            }
-        })->first();
-    }
+    expect(fn() => (new class(['doesNotExist']) extends LazyTypedCollection {
+        public function generics(): string|Type|array
+        {
+            return Type::class;
+        }
+    })->first())->toThrow(InvalidTypeException::class);
+});
 
 
-    public function testDiscardsInvalidTypes()
-    {
-        $collection = new class(['test', ['test']]) extends LazyTypedCollection implements DiscardsInvalidTypes {
-            protected function generics(): string|Type|array
-            {
-                return Type::Array;
-            }
-        };
+test('discards invalid types', function () {
+    $collection = new class(['test', ['test']]) extends LazyTypedCollection implements DiscardsInvalidTypes {
+        protected function generics(): string|Type|array
+        {
+            return Type::Array;
+        }
+    };
 
-        $this->assertCount(1, $collection);
-        $this->assertEquals(['test'], $collection->first());
-    }
+    expect($collection)->toHaveCount(1);
+    expect($collection->first())->toBe(['test']);
+});
 
-    public function testToBase(): void
-    {
-        $collection = new class extends LazyTypedCollection {
-            protected function generics(): string|Type|array
-            {
-                return Type::String;
-            }
-        };
+test('to base', function () {
+    $collection = new class extends LazyTypedCollection {
+        protected function generics(): string|Type|array
+        {
+            return Type::String;
+        }
+    };
 
-        $this->assertInstanceOf(LazyCollection::class, $collection->toBase());
+    expect($collection->toBase())->toBeInstanceOf(LazyCollection::class);
 
-        $collection = new class extends LazyTypedCollection {
-            protected function generics(): string|Type|array
-            {
-                return Type::String;
-            }
-        };
+    $collection = new class extends LazyTypedCollection {
+        protected function generics(): string|Type|array
+        {
+            return Type::String;
+        }
+    };
 
-        $this->assertInstanceOf(LazyCollection::class, $collection->toBase());
+    expect($collection->toBase())->toBeInstanceOf(LazyCollection::class);
 
-        $collection = new class extends LazyTypedCollection {
-            protected function generics(): string|Type|array
-            {
-                return Type::String;
-            }
+    $collection = new class extends LazyTypedCollection {
+        protected function generics(): string|Type|array
+        {
+            return Type::String;
+        }
 
-            protected function baseClass(): string
-            {
-                return Collection::class;
-            }
-        };
+        protected function baseClass(): string
+        {
+            return Collection::class;
+        }
+    };
 
-        $this->assertInstanceOf(Collection::class, $collection->toBase());
-    }
-}
+    expect($collection->toBase())->toBeInstanceOf(Collection::class);
+});

@@ -1,7 +1,5 @@
 <?php
 
-namespace Henzeb\Collection\Tests\Unit;
-
 use Henzeb\Collection\EloquentTypedCollection;
 use Henzeb\Collection\Enums\Type;
 use Henzeb\Collection\Tests\Stubs\Eloquent\User;
@@ -9,100 +7,82 @@ use Henzeb\Collection\Tests\Stubs\Eloquent\Users;
 use Henzeb\Collection\Typed\Arrays;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
-use Orchestra\Testbench\TestCase;
 
-class EloquentTypedCollectionTest extends TestCase
-{
-    public function testMapWithKeys(): void
-    {
-        $collection = User::all()->mapWithKeys(
-            function (User $user) {
-                return [
-                    $user->last_name . '.' . $user->id => $user->name,
-                ];
-            }
-        )->undot();
+afterEach(function () {
+    File::deleteDirectory(storage_path('framework/cache'));
+});
 
-        $this->assertEquals(
-            $collection->toArray(),
-            [
-                'West' => [
-                    1 => 'Joe',
-                    2 => 'Wally'
-                ],
-                'Allen-West' => [
-                    3 => 'Iris'
-                ]
-            ]
-        );
-    }
+test('map with keys', function () {
+    $collection = User::all()->mapWithKeys(
+        function (User $user) {
+            return [
+                $user->last_name . '.' . $user->id => $user->name,
+            ];
+        }
+    )->undot();
 
-    public function testMerge()
-    {
-        $user = new User(['id' => 4, 'name' => 'Barry', 'last_name' => 'Allen']);
-        $collection = User::all()->merge(
-            [
-                $user
-            ]
-        );
+    expect($collection->toArray())->toEqual([
+        'West' => [
+            1 => 'Joe',
+            2 => 'Wally'
+        ],
+        'Allen-West' => [
+            3 => 'Iris'
+        ]
+    ]);
+});
 
-        $this->assertInstanceOf(Users::class, $collection);
+test('merge', function () {
+    $user = new User(['id' => 4, 'name' => 'Barry', 'last_name' => 'Allen']);
+    $collection = User::all()->merge([
+        $user
+    ]);
 
-        $this->assertCount(4, $collection);
+    expect($collection)->toBeInstanceOf(Users::class);
+    expect($collection)->toHaveCount(4);
+    expect($collection->get(3))->toEqual($user);
+});
 
-        $this->assertEquals($user, $collection->get(3));
-    }
+test('refresh', function () {
+    $collection = User::all();
+    $user = User::find(3);
+    $user->last_name = 'West';
+    $user->save();
 
-    public function testRefresh()
-    {
-        $collection = User::all();
-        $user = User::find(3);
-        $user->last_name = 'West';
-        $user->save();
+    expect($collection->get(2)->last_name)->toBe('Allen-West');
 
-        $this->assertEquals('Allen-West', $collection->get(2)->last_name);
+    $collection = $collection->fresh();
 
-        $collection = $collection->fresh();
+    expect($collection->get(2)->last_name)->toBe('West');
+});
 
-        $this->assertEquals('West', $collection->get(2)->last_name);
-    }
+test('to base', function () {
+    $collection = new class extends EloquentTypedCollection {
+        protected function generics(): string|Type|array
+        {
+            return Type::Array;
+        }
+    };
 
-    public function testTobase()
-    {
-        $collection = new class extends EloquentTypedCollection {
-            protected function generics(): string|Type|array
-            {
-                return Type::Array;
-            }
-        };
+    expect($collection->toBase())->toBeInstanceOf(Collection::class);
+});
 
-        $this->assertInstanceOf(Collection::class, $collection->toBase());
-    }
+test('to base with given class', function () {
+    $collection = new class([['regular' => 'array']]) extends EloquentTypedCollection {
+        protected function generics(): string|Type|array
+        {
+            return Type::Array;
+        }
 
-    public function testToBaseWithGivenClass()
-    {
-        $collection = new class([['regular' => 'array']]) extends EloquentTypedCollection {
-            protected function generics(): string|Type|array
-            {
-                return Type::Array;
-            }
+        protected function baseClass(): string
+        {
+            return Arrays::class;
+        }
+    };
 
-            protected function baseClass(): string
-            {
-                return Arrays::class;
-            }
-        };
+    expect($collection->toBase())->toBeInstanceOf(Arrays::class);
 
-        $this->assertInstanceOf(Arrays::class, $collection->toBase());
+    $mapped = $collection->map(fn(array $array) => json_encode($array))->toArray();
 
-        $mapped = $collection->map(fn(array $array) => json_encode($array))->toArray();
-
-        $this->assertEquals([json_encode(['regular' => 'array'])], $mapped);
-    }
-
-    protected function tearDown(): void
-    {
-        File::deleteDirectory(storage_path('framework/cache'));
-        parent::tearDown();
-    }
-}
+    expect($mapped)->toEqual([json_encode(['regular' => 'array'])]);
+});
