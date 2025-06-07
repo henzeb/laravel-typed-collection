@@ -84,11 +84,11 @@ abstract class LazyTypedCollection extends LazyCollection
             ->mapInto(static::class);
     }
 
-    public function chunk($size)
+    public function chunk($size, $preserveKeys = true)
     {
         return (new LazyCollection(
             $this
-        ))->chunk($size)
+        ))->chunk($size, $preserveKeys)
             ->mapInto(static::class);
     }
 

@@ -37,7 +37,7 @@
     "calebporzio/sushi": "^2.4",
     "orchestra/testbench": "^8|^9|^10",
     "phpstan/phpstan": "^1.4",
-    "phpunit/phpunit": "^9.6.6|^10",
+    "phpunit/phpunit": "^9.6.6|^10|^11",
     "ramsey/uuid": "^4.2.2",
     "symfony/uid": "^5.1|^6.3|^7"
   },

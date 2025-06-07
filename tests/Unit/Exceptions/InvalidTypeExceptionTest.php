@@ -37,13 +37,13 @@ class InvalidTypeExceptionTest extends TestCase
     public static function providesTypeTestcases()
     {
         return [
-            'string' => ['item' => 'Hello World', 'string'],
-            'numeric' => ['item' => '21', 'numeric'],
-            'resource' => ['item' => STDIN, 'resource'],
-            'double' => ['item' => 1.1, 'double'],
-            'array' => ['item' => ['hello'], 'array'],
-            'boolean' => ['item' => true, 'boolean'],
-            'integer' => ['item' => 21, 'integer'],
+            'string' => ['Hello World', 'string'],
+            'numeric' => ['21', 'numeric'],
+            'resource' => [STDIN, 'resource'],
+            'double' => [1.1, 'double'],
+            'array' => [['hello'], 'array'],
+            'boolean' => [true, 'boolean'],
+            'integer' => [21, 'integer'],
         ];
     }
 

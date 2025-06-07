@@ -579,6 +579,32 @@ class TypedCollectionTest extends TestCase
         $this->assertSame([2 => '!'], $chunks->last()->all());
     }
 
+    public function testChunkPreserveKeys(): void
+    {
+        $version = app()->version();
+        if (version_compare($version, '12.0', '<')) {
+            $this->markTestSkipped('This test requires Laravel 12 or higher');
+        }
+
+        $collection = new class([1 => 'hello', 3 => 'world', 5 => '!']) extends TypedCollection {
+            protected function generics(): Type
+            {
+                return Type::String;
+            }
+        };
+
+        $chunks = $collection->chunk(2, true);
+
+        $this->assertCount(2, $chunks);
+
+        foreach ($chunks as $chunk) {
+            $this->assertInstanceOf($collection::class, $chunk);
+        }
+
+        $this->assertSame([1 => 'hello', 3 => 'world'], $chunks->first()->all());
+        $this->assertSame([5 => '!'], $chunks->last()->all());
+    }
+
     public function testAllowMapping()
     {
         $this->assertEquals(
