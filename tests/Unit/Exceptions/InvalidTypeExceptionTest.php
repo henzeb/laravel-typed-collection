@@ -1,68 +1,48 @@
 <?php
 
-namespace Henzeb\Collection\Tests\Unit\Exceptions;
-
 use Henzeb\Collection\Enums\Type;
 use Henzeb\Collection\Exceptions\InvalidTypeException;
-use PHPUnit\Framework\TestCase;
 
-class InvalidTypeExceptionTest extends TestCase
-{
-    public function testMessageContainsGeneric()
-    {
-        $exception = new InvalidTypeException(
-            self::class,
-            'Hello World',
-            [self::class, Type::Numeric]
-        );
-        $this->assertSame(
-            'Henzeb\Collection\Tests\Unit\Exceptions\InvalidTypeExceptionTest: The given value `string` does not match (one of) the generic type [Henzeb\Collection\Tests\Unit\Exceptions\InvalidTypeExceptionTest, numeric] for this collection.',
-            $exception->getMessage()
-        );
-    }
+test('message contains generic', function () {
+    $exception = new InvalidTypeException(
+        'Henzeb\Collection\Tests\Unit\Exceptions\InvalidTypeExceptionTest',
+        'Hello World',
+        ['Henzeb\Collection\Tests\Unit\Exceptions\InvalidTypeExceptionTest', Type::Numeric]
+    );
+    expect($exception->getMessage())->toBe(
+        'Henzeb\Collection\Tests\Unit\Exceptions\InvalidTypeExceptionTest: The given value `string` does not match (one of) the generic type [Henzeb\Collection\Tests\Unit\Exceptions\InvalidTypeExceptionTest, numeric] for this collection.'
+    );
+});
 
-    public function testMessageContainsUnknownGeneric()
-    {
-        $exception = new InvalidTypeException(
-            self::class,
-            'Hello World',
-            [$this]
-        );
-        $this->assertSame(
-            'Henzeb\Collection\Tests\Unit\Exceptions\InvalidTypeExceptionTest: The given value `string` does not match (one of) the generic type [unknown] for this collection.',
-            $exception->getMessage()
-        );
-    }
+test('message contains unknown generic', function () {
+    $testObject = new class {};
+    $exception = new InvalidTypeException(
+        'Henzeb\Collection\Tests\Unit\Exceptions\InvalidTypeExceptionTest',
+        'Hello World',
+        [$testObject]
+    );
+    expect($exception->getMessage())->toBe(
+        'Henzeb\Collection\Tests\Unit\Exceptions\InvalidTypeExceptionTest: The given value `string` does not match (one of) the generic type [unknown] for this collection.'
+    );
+});
 
-    public static function providesTypeTestcases()
-    {
-        return [
-            'string' => ['Hello World', 'string'],
-            'numeric' => ['21', 'numeric'],
-            'resource' => [STDIN, 'resource'],
-            'double' => [1.1, 'double'],
-            'array' => [['hello'], 'array'],
-            'boolean' => [true, 'boolean'],
-            'integer' => [21, 'integer'],
-        ];
-    }
 
-    /**
-     * @return void
-     *
-     * @dataProvider providesTypeTestcases
-     */
-    public function testMessageContainsGenericTypeOfItem(mixed $item, string $expectedValue)
-    {
-        $exception = new InvalidTypeException(
-            'test',
-            $item,
-            []
-        );
+test('message contains generic type of item', function (mixed $item, string $expectedValue) {
+    $exception = new InvalidTypeException(
+        'test',
+        $item,
+        []
+    );
 
-        $this->assertSame(
-            'test: The given value `' . $expectedValue . '` does not match (one of) the generic type [] for this collection.',
-            $exception->getMessage()
-        );
-    }
-}
+    expect($exception->getMessage())->toBe(
+        'test: The given value `' . $expectedValue . '` does not match (one of) the generic type [] for this collection.'
+    );
+})->with([
+    'string' => ['Hello World', 'string'],
+    'numeric' => ['21', 'numeric'],
+    'resource' => [STDIN, 'resource'],
+    'double' => [1.1, 'double'],
+    'array' => [['hello'], 'array'],
+    'boolean' => [true, 'boolean'],
+    'integer' => [21, 'integer'],
+]);

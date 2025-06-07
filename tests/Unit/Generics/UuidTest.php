@@ -1,41 +1,19 @@
 <?php
 
-namespace Henzeb\Collection\Tests\Unit\Generics;
-
 use Henzeb\Collection\Generics\Uuid;
-use PHPUnit\Framework\TestCase;
 
-class UuidTest extends TestCase
-{
-    public function testUuidValidates(): void
-    {
-        $this->assertTrue(
-            Uuid::matchesType(
-                '1b2a5269-de6f-4e19-a75a-06c0262dbcd7'
-            )
-        );
-    }
+test('uuid validates', function () {
+    expect(Uuid::matchesType('1b2a5269-de6f-4e19-a75a-06c0262dbcd7'))->toBeTrue();
+});
 
-    public function testFailsOnNonString(): void
-    {
-        $this->assertFalse(
-            Uuid::matchesType(
-                $this
-            )
-        );
-    }
+test('fails on non string', function () {
+    expect(Uuid::matchesType($this))->toBeFalse();
+});
 
-    public function testFailsOnNotUuidString(): void
-    {
-        $this->assertFalse(Uuid::matchesType('Not a Uuid'));
-    }
+test('fails on not uuid string', function () {
+    expect(Uuid::matchesType('Not a Uuid'))->toBeFalse();
+});
 
-    public function testFailsOnInvalidUuid(): void
-    {
-        $this->assertFalse(
-            Uuid::matchesType(
-                '1b2a5269-de6f-4e19-a75a-06c0262dbcd'
-            )
-        );
-    }
-}
+test('fails on invalid uuid', function () {
+    expect(Uuid::matchesType('1b2a5269-de6f-4e19-a75a-06c0262dbcd'))->toBeFalse();
+});

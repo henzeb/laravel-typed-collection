@@ -26,7 +26,7 @@ class GenericsLazyCollection extends LazyTypedCollection
 
     protected function generics(): string|Type|array
     {
-        return $this->generics;
+        return $this->generics ?: [];
     }
 
     protected function keyGenerics(): string|Type|array

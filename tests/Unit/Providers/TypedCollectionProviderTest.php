@@ -1,7 +1,5 @@
 <?php
 
-namespace Henzeb\Collection\Tests\Unit\Providers;
-
 use Henzeb\Collection\Enums\Type;
 use Henzeb\Collection\Exceptions\InvalidKeyTypeException;
 use Henzeb\Collection\Exceptions\InvalidTypeException;
@@ -10,245 +8,208 @@ use Henzeb\Collection\Generics\Uuid;
 use Henzeb\Collection\LazyTypedCollection;
 use Henzeb\Collection\Providers\TypedCollectionProvider;
 use Henzeb\Collection\TypedCollection;
-use Orchestra\Testbench\TestCase;
 
-class TypedCollectionProviderTest extends TestCase
-{
-    protected function getPackageProviders($app): array
-    {
-        return [
-            TypedCollectionProvider::class
-        ];
-    }
+beforeEach(function () {
+    $this->app->register(TypedCollectionProvider::class);
+});
 
-    public function testGetWithGenerics()
-    {
-        $collection = collect('initial value')->withGenerics('string');
+test('get with generics', function () {
+    $collection = collect('initial value')->withGenerics('string');
 
-        $this->assertInstanceOf(TypedCollection::class, $collection);
+    expect($collection)->toBeInstanceOf(TypedCollection::class);
 
-        $collection->add('a string');
+    $collection->add('a string');
 
-        $collection[] = 'another string';
+    $collection[] = 'another string';
 
-        $this->assertSame(
-            [
-                'initial value',
-                'a string',
-                'another string',
-            ],
-            $collection->all()
-        );
+    expect($collection->all())->toBe([
+        'initial value',
+        'a string',
+        'another string',
+    ]);
 
-        $this->expectException(InvalidTypeException::class);
+    expect(fn() => $collection->put('test', $this))
+        ->toThrow(InvalidTypeException::class);
+});
 
-        $collection->put('test', $this);
-    }
+test('get with generics without types', function () {
+    expect(fn() => collect()->withGenerics())
+        ->toThrow(MissingGenericsException::class);
+});
 
-    public function testGetWithGenericsWithoutTypes()
-    {
-        $this->expectException(MissingGenericsException::class);
-        collect()->withGenerics();
+test('get with generics without types lazy', function () {
+    expect(fn() => collect()->lazy()->withGenerics())
+        ->toThrow(MissingGenericsException::class);
+});
 
-        $this->expectException(MissingGenericsException::class);
-        collect()->lazy()->withGenerics();
-    }
+test('get with generics lazy', function () {
+    $collection = collect(['hello world'])
+        ->lazy()
+        ->withGenerics('string');
 
-    public function testGetWithGenericsLazy()
-    {
-        $collection = collect(['hello world'])
-            ->lazy()
-            ->withGenerics('string');
+    expect($collection)->toBeInstanceOf(LazyTypedCollection::class);
 
-        $this->assertInstanceOf(LazyTypedCollection::class, $collection);
+    expect($collection->all())->toBe([
+        'hello world',
+    ]);
 
-        $this->assertSame(
-            [
-                'hello world',
-            ],
-            $collection->all()
-        );
+    $collection = collect(['hello world', true])
+        ->lazy()
+        ->withGenerics('string')
+        ->getIterator();
 
-        $collection = collect(['hello world', true])
-            ->lazy()
-            ->withGenerics('string')
-            ->getIterator();
+    expect(fn() => $collection->next())
+        ->toThrow(InvalidTypeException::class);
+});
 
+test('typed collection with generics', function () {
+    $typed = new class(['initial value']) extends TypedCollection {
+        protected function generics(): string|Type|array
+        {
+            return Type::String;
+        }
+    };
 
-        $this->expectException(InvalidTypeException::class);
+    $collection = $typed->withGenerics();
 
-        $collection->next();
-    }
+    expect($collection)->toBeInstanceOf(TypedCollection::class);
 
-    public function testTypedCollectionWithGenerics()
-    {
-        $typed = new class(['initial value']) extends TypedCollection {
-            protected function generics(): string|Type|array
-            {
-                return Type::String;
-            }
-        };
+    $collection->add('a string');
 
-        $collection = $typed->withGenerics();
+    $collection[] = 'another string';
 
-        $this->assertInstanceOf(TypedCollection::class, $collection);
+    expect($collection->all())->toBe([
+        'initial value',
+        'a string',
+        'another string',
+    ]);
 
-        $collection->add('a string');
+    expect(fn() => $collection->put('test', $this))
+        ->toThrow(InvalidTypeException::class);
+});
 
-        $collection[] = 'another string';
+test('typed collection with key generics', function () {
+    $uuid1 = \Ramsey\Uuid\Uuid::uuid4()->toString();
+    $uuid2 = \Ramsey\Uuid\Uuid::uuid4()->toString();
+    $uuid3 = \Ramsey\Uuid\Uuid::uuid4()->toString();
 
-        $this->assertSame(
-            [
-                'initial value',
-                'a string',
-                'another string',
-            ],
-            $collection->all()
-        );
+    $typed = new class([$uuid1 => 'initial value']) extends TypedCollection {
+        protected function generics(): string|Type|array
+        {
+            return Type::String;
+        }
 
-        $this->expectException(InvalidTypeException::class);
+        protected function keyGenerics(): string|Type|array
+        {
+            return Uuid::class;
+        }
+    };
 
-        $collection->put('test', $this);
-    }
+    $collection = $typed->withKeyGenerics();
 
-    public function testTypedCollectionWithKeyGenerics()
-    {
-        $uuid1 = \Ramsey\Uuid\Uuid::uuid4()->toString();
-        $uuid2 = \Ramsey\Uuid\Uuid::uuid4()->toString();
-        $uuid3 = \Ramsey\Uuid\Uuid::uuid4()->toString();
+    expect($collection)->toBeInstanceOf(TypedCollection::class);
 
-        $typed = new class([$uuid1 => 'initial value']) extends TypedCollection {
-            protected function generics(): string|Type|array
-            {
-                return Type::String;
-            }
+    $collection->put($uuid2, 'a string');
 
-            protected function keyGenerics(): string|Type|array
-            {
-                return Uuid::class;
-            }
-        };
+    $collection[$uuid3] = 'another string';
 
-        $collection = $typed->withKeyGenerics();
+    expect($collection->all())->toBe([
+        $uuid1 => 'initial value',
+        $uuid2 => 'a string',
+        $uuid3 => 'another string',
+    ]);
 
-        $this->assertInstanceOf(TypedCollection::class, $collection);
+    expect(fn() => $collection->put('test', $this))
+        ->toThrow(InvalidTypeException::class);
+});
 
-        $collection->put($uuid2, 'a string');
+test('lazy typed collection with key generics', function () {
+    $uuid1 = \Ramsey\Uuid\Uuid::uuid4()->toString();
 
-        $collection[$uuid3] = 'another string';
+    $typed = new class([$uuid1 => 'initial value']) extends LazyTypedCollection {
+        protected function generics(): string|Type|array
+        {
+            return Type::String;
+        }
 
-        $this->assertSame(
-            [
-                $uuid1 => 'initial value',
-                $uuid2 => 'a string',
-                $uuid3 => 'another string',
-            ],
-            $collection->all()
-        );
+        protected function keyGenerics(): string|Type|array
+        {
+            return Uuid::class;
+        }
+    };
 
-        $this->expectException(InvalidTypeException::class);
+    $collection = $typed->withKeyGenerics();
 
-        $collection->put('test', $this);
-    }
+    expect($collection)->toBeInstanceOf(LazyTypedCollection::class);
 
-    public function testLazyTypedCollectionWithKeyGenerics()
-    {
-        $uuid1 = \Ramsey\Uuid\Uuid::uuid4()->toString();
+    expect($collection->all())->toBe([
+        $uuid1 => 'initial value',
+    ]);
+});
 
-        $typed = new class([$uuid1 => 'initial value']) extends LazyTypedCollection {
-            protected function generics(): string|Type|array
-            {
-                return Type::String;
-            }
+test('only generics', function () {
+    collect([true, 'hello world'])
+        ->onlyGenerics(Type::Bool)
+        ->withGenerics(Type::Bool);
 
-            protected function keyGenerics(): string|Type|array
-            {
-                return Uuid::class;
-            }
-        };
+    collect([[], 'hello world'])
+        ->onlyGenerics(Type::Bool)
+        ->withGenerics(Type::Bool);
 
-        $collection = $typed->withKeyGenerics();
+    expect(fn() => collect([true, 'hello world'])
+        ->onlyGenerics(Type::Bool)
+        ->withGenerics(Type::String))
+        ->toThrow(InvalidTypeException::class);
+});
 
-        $this->assertInstanceOf(LazyTypedCollection::class, $collection);
+test('only key generics', function () {
+    collect([0 => 'test', 'hello world' => 'test'])
+        ->onlyKeyGenerics(Type::Int)
+        ->withKeyGenerics(Type::Int);
 
-        $this->assertSame(
-            [
-                $uuid1 => 'initial value',
-            ],
-            $collection->all()
-        );
-    }
+    expect(fn() => collect([0 => 'test', 'hello world' => 'test'])
+        ->onlyKeyGenerics(Type::String)
+        ->withKeyGenerics(Type::Int))
+        ->toThrow(InvalidKeyTypeException::class);
+});
 
-    public function testOnlyGenerics(): void
-    {
-        collect([true, 'hello world'])
-            ->onlyGenerics(Type::Bool)
-            ->withGenerics(Type::Bool);
+test('only lazy generics', function () {
+    $collection = collect([true, 'hello world'])
+        ->lazy()
+        ->onlyGenerics(Type::Bool)
+        ->withGenerics(Type::Bool);
 
-        collect([[], 'hello world'])
-            ->onlyGenerics(Type::Bool)
-            ->withGenerics(Type::Bool);
+    $collection->getIterator()->next();
 
-        $this->expectException(InvalidTypeException::class);
+    $collection = collect([[], 'hello world'])
+        ->lazy()
+        ->onlyGenerics(Type::Bool)
+        ->withGenerics(Type::Bool);
 
-        collect([true, 'hello world'])
-            ->onlyGenerics(Type::Bool)
-            ->withGenerics(Type::String);
-    }
+    $collection->getIterator()->next();
 
-    public function testOnlyKeyGenerics(): void
-    {
-        collect([0 => 'test', 'hello world' => 'test'])
-            ->onlyKeyGenerics(Type::Int)
-            ->withKeyGenerics(Type::Int);
+    $collection = collect([true, 'hello world'])
+        ->lazy()
+        ->onlyGenerics(Type::Bool)
+        ->withGenerics(Type::String);
 
-        $this->expectException(InvalidKeyTypeException::class);
+    expect(fn() => $collection->getIterator()->next())
+        ->toThrow(InvalidTypeException::class);
+});
 
-        collect([0 => 'test', 'hello world' => 'test'])
-            ->onlyKeyGenerics(Type::String)
-            ->withKeyGenerics(Type::Int);
-    }
+test('only key generics lazy', function () {
+    $collection = collect([0 => 'test', 'hello world' => 'test'])
+        ->lazy()
+        ->onlyKeyGenerics(Type::Int)
+        ->withGenerics(Type::Int);
 
-    public function testOnlyLazyGenerics(): void
-    {
-        $collection = collect([true, 'hello world'])
-            ->lazy()
-            ->onlyGenerics(Type::Bool)
-            ->withGenerics(Type::Bool);
+    $collection->getIterator()->next();
 
-        $collection->getIterator()->next();
+    $collection = collect([0 => 'test', 'hello world' => 'test'])
+        ->lazy()
+        ->onlyGenerics(Type::String)
+        ->withGenerics(Type::Int);
 
-        $collection = collect([[], 'hello world'])
-            ->lazy()
-            ->onlyGenerics(Type::Bool)
-            ->withGenerics(Type::Bool);
-
-        $collection->getIterator()->next();
-
-        $collection = collect([true, 'hello world'])
-            ->lazy()
-            ->onlyGenerics(Type::Bool)
-            ->withGenerics(Type::String);
-
-        $this->expectException(InvalidTypeException::class);
-
-        $collection->getIterator()->next();
-    }
-
-    public function testOnlyKeyGenericsLazy(): void
-    {
-        $collection = collect([0 => 'test', 'hello world' => 'test'])
-            ->lazy()
-            ->onlyKeyGenerics(Type::Int)
-            ->withGenerics(Type::Int);
-
-        $collection->getIterator()->next();
-
-        $this->expectException(InvalidTypeException::class);
-
-        $collection = collect([0 => 'test', 'hello world' => 'test'])
-            ->onlyGenerics(Type::String)
-            ->withGenerics(Type::Int);
-        $collection->getIterator()->next();
-    }
-}
+    expect(fn() => $collection->getIterator()->next())
+        ->toThrow(InvalidTypeException::class);
+});
