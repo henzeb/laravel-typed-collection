@@ -3,30 +3,119 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - master
       - main
+      - master
     paths-ignore:
       - '**.md'
-      - '**.yml'
   pull_request:
     paths-ignore:
       - '**.md'
-      - '**.yml'
+
 jobs:
+  lint:
+    name: Lint PHP Files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.6'
+
+      - name: Lint PHP files
+        run: find src/ tests/ -name "*.php" -exec php -l {} \;
+
+  pint:
+    name: Code Style (Pint)
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.6'
+          tools: composer:v2
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v6
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-prefer-stable-8.6
+          restore-keys: ${{ runner.os }}-composer-prefer-stable-8.6
+
+      - name: Disable Packagist install notifications
+        run: composer config --global notify-on-install false
+
+      - name: Install PHP Dependencies
+        uses: nick-fields/retry@v4
+        with:
+          timeout_minutes: 5
+          max_attempts: 5
+          command: composer update --prefer-stable --prefer-dist --no-interaction --no-progress --quiet
+
+      - name: Check code style
+        run: vendor/bin/pint --test
+
+  phpstan:
+    name: Static Analysis (PHPStan)
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.6'
+          tools: composer:v2
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v6
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-prefer-stable-8.6
+          restore-keys: ${{ runner.os }}-composer-prefer-stable-8.6
+
+      - name: Disable Packagist install notifications
+        run: composer config --global notify-on-install false
+
+      - name: Install PHP Dependencies
+        uses: nick-fields/retry@v4
+        with:
+          timeout_minutes: 5
+          max_attempts: 5
+          command: composer update --prefer-stable --prefer-dist --no-interaction --no-progress --quiet
+
+      - name: Run PHPStan
+        run: vendor/bin/phpstan analyse --no-progress
+
   tests:
     name: PHP ${{ matrix.php }} - ${{ matrix.stability }}
     runs-on: ubuntu-latest
-    env:
-      CC_TOKEN: ${{ secrets.CODECLIMATE_TOKEN }}
+    needs: lint
     strategy:
       fail-fast: true
       matrix:
-        php: [ '8.1','8.4','8.5' ]
+        php: [ '8.2','8.6' ]
         stability: [ prefer-lowest, prefer-stable ]
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -41,32 +130,23 @@ jobs:
       - name: Get composer cache directory
         id: composer-cache
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-        if: ${{ !env.ACT }}
 
       - name: Cache composer dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ matrix.stability }}-${{ matrix.php }}
           restore-keys: ${{ runner.os }}-composer-${{ matrix.stability }}-${{ matrix.php }}
-        if: ${{ !env.ACT }}
+
+      - name: Disable Packagist install notifications
+        run: composer config --global notify-on-install false
 
       - name: Install PHP Dependencies
-        uses: nick-invision/retry@v2
+        uses: nick-fields/retry@v4
         with:
           timeout_minutes: 5
           max_attempts: 5
           command: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress --quiet
 
-      - name: Execute PHPUnit
-        run: vendor/bin/pest --coverage-clover=coverage.xml
-
-      - name: Upload coverage to codeclimate
-        uses: paambaati/codeclimate-action@v3.1.1
-        continue-on-error: true
-        env:
-          CC_TEST_REPORTER_ID: ${{ env.CC_TOKEN }}
-        with:
-          coverageCommand: ''
-          coverageLocations: ./coverage.xml:clover
-        if: ${{ !env.ACT && env.CC_TOKEN && matrix.stability == 'prefer-stable' && matrix.php == '8.2' }}
+      - name: Execute tests
+        run: vendor/bin/pest --compact

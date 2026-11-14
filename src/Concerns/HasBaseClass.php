@@ -11,6 +11,9 @@ use Illuminate\Support\LazyCollection;
  */
 trait HasBaseClass
 {
+    /**
+     * @return class-string<BaseCollection<array-key, covariant mixed>>|class-string<LazyCollection<array-key, covariant mixed>>
+     */
     protected function baseClass(): string
     {
         return ($this instanceof LazyCollection) ? LazyCollection::class : Collection::class;
@@ -19,14 +22,17 @@ trait HasBaseClass
     /**
      * Get a base Support collection instance from this collection.
      *
-     * @return BaseCollection<TKey, TValue>|LazyCollection<TKey, TValue>
+     * @return BaseCollection<array-key, covariant mixed>|LazyCollection<array-key, covariant mixed>
      */
+    // @phpstan-ignore method.childReturnType
     public function toBase(): BaseCollection|LazyCollection
     {
-        if ($this->baseClass() === Collection::class) {
-            return parent::toBase();
+        $baseClass = $this->baseClass();
+
+        if ($baseClass === Collection::class) {
+            return new BaseCollection($this);
         }
 
-        return new ($this->baseClass())($this);
+        return new $baseClass($this);
     }
 }

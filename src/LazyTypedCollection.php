@@ -18,7 +18,7 @@ use Illuminate\Support\LazyCollection;
 /**
  * @template TKey of array-key
  *
- * @template-covariant TValue
+ * @template TValue
  *
  * @extends LazyCollection<TKey, TValue>
  */
@@ -80,14 +80,14 @@ abstract class LazyTypedCollection extends LazyCollection
 
     public function chunkWhile(callable $callback)
     {
-        return (new LazyCollection(
-            $this
-        ))->chunkWhile($callback)
+        // @phpstan-ignore return.type, argument.type
+        return (new LazyCollection($this))->chunkWhile($callback)
             ->mapInto(static::class);
     }
 
     public function chunk($size, $preserveKeys = true)
     {
+        // @phpstan-ignore return.type
         return (new LazyCollection(
             $this
         ))->chunk($size, $preserveKeys)
@@ -96,6 +96,7 @@ abstract class LazyTypedCollection extends LazyCollection
 
     public function map(callable $callback)
     {
+        // @phpstan-ignore return.type
         return (new LazyCollection(
             $this
         ))->map($callback);
@@ -103,6 +104,7 @@ abstract class LazyTypedCollection extends LazyCollection
 
     public function mapWithKeys(callable $callback): LazyCollection
     {
+        // @phpstan-ignore return.type
         return (new LazyCollection(
             $this
         ))->mapWithKeys($callback);
@@ -110,6 +112,7 @@ abstract class LazyTypedCollection extends LazyCollection
 
     public function mapToDictionary(callable $callback): LazyCollection
     {
+        // @phpstan-ignore return.type
         return (new LazyCollection(
             $this
         ))->mapToDictionary($callback);
@@ -117,6 +120,7 @@ abstract class LazyTypedCollection extends LazyCollection
 
     public function keys()
     {
+        // @phpstan-ignore return.type
         return (new LazyCollection($this))->keys();
     }
 }

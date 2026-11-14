@@ -304,4 +304,20 @@ test('to base', function () {
     };
 
     expect($collection->toBase())->toBeInstanceOf(Collection::class);
+
+    $collection = new class (['hello']) extends LazyTypedCollection {
+        protected function generics(): string|Type|array
+        {
+            return Type::String;
+        }
+
+        protected function baseClass(): string
+        {
+            return \Illuminate\Database\Eloquent\Collection::class;
+        }
+    };
+
+    expect($collection->toBase())->toBeInstanceOf(Collection::class)
+        ->not->toBeInstanceOf(\Illuminate\Database\Eloquent\Collection::class)
+        ->and($collection->toBase()->all())->toBe(['hello']);
 });

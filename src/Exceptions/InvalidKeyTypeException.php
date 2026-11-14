@@ -9,6 +9,9 @@ class InvalidKeyTypeException extends Exception
 {
     use HandlesTypeOutput;
 
+    /**
+     * @param array<array-key, mixed> $types
+     */
     public function __construct(string $class, mixed $item, array $types)
     {
         parent::__construct(

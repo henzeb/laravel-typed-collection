@@ -5,27 +5,28 @@ namespace Henzeb\Collection\Mixins;
 use Closure;
 use Henzeb\Collection\Enums\Type;
 use Henzeb\Collection\Support\GenericsCollection;
+use Henzeb\Collection\Support\GenericsFactory;
 use Henzeb\Collection\Support\GenericsLazyCollection;
-use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
 
 class CollectionMixin
 {
     public function withGenerics(): Closure
     {
-        return function (string|Type ...$generics): GenericsLazyCollection|GenericsCollection {
-            /**
-             * @var $this Collection
-             */
-            if ($this instanceof LazyCollection) {
+        $factory = new GenericsFactory();
+
+        return function (string|Type ...$generics) use ($factory): GenericsLazyCollection|GenericsCollection {
+            $collection = $factory->collection($this);
+
+            if ($collection instanceof LazyCollection) {
                 return new GenericsLazyCollection(
-                    $this,
+                    $collection,
                     $generics
                 );
             }
 
             return new GenericsCollection(
-                $this->all(),
+                $collection->all(),
                 $generics
             );
         };
@@ -33,20 +34,21 @@ class CollectionMixin
 
     public function withKeyGenerics(): Closure
     {
-        return function (string|Type ...$generics): GenericsLazyCollection|GenericsCollection {
-            /**
-             * @var $this Collection
-             */
-            if ($this instanceof LazyCollection) {
+        $factory = new GenericsFactory();
+
+        return function (string|Type ...$generics) use ($factory): GenericsLazyCollection|GenericsCollection {
+            $collection = $factory->collection($this);
+
+            if ($collection instanceof LazyCollection) {
                 return new GenericsLazyCollection(
-                    $this,
+                    $collection,
                     null,
                     $generics
                 );
             }
 
             return new GenericsCollection(
-                $this->all(),
+                $collection->all(),
                 null,
                 $generics
             );
@@ -55,12 +57,12 @@ class CollectionMixin
 
     public function onlyGenerics(): Closure
     {
-        return function (string|Type ...$generics) {
-            /**
-             * @var $this Collection|LazyCollection
-             */
-            $collection = collect()->withGenerics(...$generics);
-            return $this->filter(
+        $factory = new GenericsFactory();
+
+        return function (string|Type ...$generics) use ($factory) {
+            $collection = $factory->make($generics);
+
+            return $factory->collection($this)->filter(
                 function (mixed $item) use ($collection) {
                     return $collection->accepts($item);
                 }
@@ -70,12 +72,12 @@ class CollectionMixin
 
     public function onlyKeyGenerics(): Closure
     {
-        return function (string|Type ...$generics) {
-            /**
-             * @var $this Collection|LazyCollection
-             */
-            $collection = collect()->withKeyGenerics(...$generics);
-            return $this->filter(
+        $factory = new GenericsFactory();
+
+        return function (string|Type ...$generics) use ($factory) {
+            $collection = $factory->make(null, $generics);
+
+            return $factory->collection($this)->filter(
                 function (mixed $item) use ($collection) {
                     return $collection->acceptsKey($item);
                 }

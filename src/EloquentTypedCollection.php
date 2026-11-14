@@ -11,9 +11,9 @@ use Illuminate\Database\Eloquent\Collection;
 /**
  * @template TKey of array-key
  *
- * @template-covariant TValue
+ * @template TModel of \Illuminate\Database\Eloquent\Model
  *
- * @extends Collection<TKey, TValue>
+ * @extends Collection<TKey, TModel>
  */
 abstract class EloquentTypedCollection extends Collection
 {

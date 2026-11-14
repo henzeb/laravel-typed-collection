@@ -61,5 +61,6 @@ test('value', function (Type $type, string $expected) {
     [Type::Null, 'NULL'],
     [Type::Resource, 'resource'],
     [Type::Object, 'object'],
-    [Type::Numeric, 'numeric']
+    [Type::Numeric, 'numeric'],
+    [Type::Mixed, 'mixed'],
 ]);

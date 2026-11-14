@@ -2,16 +2,12 @@
 
 namespace Henzeb\Collection\Concerns;
 
-use Henzeb\Collection\Enums\Type;
-use Henzeb\Collection\LazyTypedCollection;
-use Henzeb\Collection\TypedCollection;
-
 /**
  * @internal
  */
 trait CollectsGenerics
 {
-    private function getParentObject(): TypedCollection|LazyTypedCollection|null
+    private function getParentObject(): ?object
     {
         /**
          * @infection-ignore-all
@@ -21,22 +17,6 @@ trait CollectsGenerics
             4
         );
 
-        $object = end($backtrace)['object'];
-
-        if ($object instanceof TypedCollection || $object instanceof LazyTypedCollection) {
-            return $object;
-        }
-
-        return null;
-    }
-
-    private function collectGenerics(): Type|string|array|null
-    {
-        return $this->getParentObject()?->generics();
-    }
-
-    private function collectKeyGenerics(): Type|string|array|null
-    {
-        return $this->getParentObject()?->keyGenerics();
+        return end($backtrace)['object'] ?? null;
     }
 }

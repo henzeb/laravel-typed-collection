@@ -37,7 +37,7 @@ class Json implements GenericType, CastableGenericType
         return is_string($item) && self::validateJson($item);
     }
 
-    private static function validateJson(mixed $item): bool
+    private static function validateJson(string $item): bool
     {
         if (self::$useJsonValidate ??= function_exists('json_validate')) {
             return json_validate($item);

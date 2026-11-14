@@ -11,6 +11,7 @@ use Henzeb\Collection\TypedCollection as TypedCollectionClass;
 /**
  * @property string $typedCollection
  */
+// @phpstan-ignore trait.unused
 trait TypedCollection
 {
     private function isValidTypedCollection(): bool

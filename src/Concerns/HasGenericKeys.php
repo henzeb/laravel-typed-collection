@@ -14,6 +14,9 @@ use Illuminate\Support\Arr;
  */
 trait HasGenericKeys
 {
+    /**
+     * @return string|Type|array<array-key, mixed>
+     */
     protected function keyGenerics(): string|Type|array
     {
         return Type::keyables();
@@ -52,7 +55,10 @@ trait HasGenericKeys
         }
     }
 
-    private function validateKeyTypes(array $items)
+    /**
+     * @param array<array-key, mixed> $items
+     */
+    private function validateKeyTypes(array $items): void
     {
         if ($this->keyGenerics() === Type::keyables()) {
             return;
@@ -80,11 +86,11 @@ trait HasGenericKeys
         );
     }
 
-    private function matchesKeyGeneric(string|Type $generic, mixed $key): bool
+    private function matchesKeyGeneric(mixed $generic, mixed $key): bool
     {
         $keyType = Type::fromValue($key);
 
-        if (!$keyType->keyable()) {
+        if (!$keyType?->keyable()) {
             return false;
         }
 
@@ -92,13 +98,16 @@ trait HasGenericKeys
             return true;
         }
 
-        if (is_a($generic, GenericType::class, true)
-        ) {
+        if (is_string($generic) && is_a($generic, GenericType::class, true)) {
             return $generic::matchesType($key);
         }
 
         if (is_string($generic)) {
             $generic = Type::tryFrom($generic);
+        }
+
+        if (!$generic instanceof Type) {
+            return false;
         }
 
         return $generic->equals($keyType);

@@ -718,3 +718,17 @@ test('typed strings lazy class method', function () {
 
     expect($method->invoke($collection))->toBe(\Henzeb\Collection\Lazy\Strings::class);
 });
+
+test('pure enum generics do not cast', function () {
+    $collection = new class () extends TypedCollection {
+        protected function generics(): string|Type|array
+        {
+            return \Henzeb\Collection\Tests\Stubs\PureEnum::class;
+        }
+    };
+
+    $collection->add(\Henzeb\Collection\Tests\Stubs\PureEnum::First);
+
+    expect($collection->all())->toBe([\Henzeb\Collection\Tests\Stubs\PureEnum::First])
+        ->and(fn () => $collection->add('First'))->toThrow(InvalidTypeException::class);
+});

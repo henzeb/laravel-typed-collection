@@ -45,4 +45,5 @@ test('message contains generic type of item', function (mixed $item, string $exp
     'array' => [['hello'], 'array'],
     'boolean' => [true, 'boolean'],
     'integer' => [21, 'integer'],
+    'closed resource' => [tap(fopen('php://memory', 'r'), fn ($resource) => fclose($resource)), 'unknown'],
 ]);

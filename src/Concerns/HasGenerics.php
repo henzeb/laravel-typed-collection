@@ -16,6 +16,9 @@ use Illuminate\Support\Arr;
  */
 trait HasGenerics
 {
+    /**
+     * @return string|Type|array<array-key, mixed>
+     */
     abstract protected function generics(): string|Type|array;
 
     /**
@@ -55,7 +58,10 @@ trait HasGenerics
         }
     }
 
-    private function castTypes(&$items)
+    /**
+     * @param array<array-key, mixed> $items
+     */
+    private function castTypes(array &$items): void
     {
         array_walk(
             $items,
@@ -64,11 +70,10 @@ trait HasGenerics
     }
 
     /**
-     * @param $items
-     * @return void
+     * @param array<array-key, mixed> $items
      * @throws InvalidTypeException
      */
-    private function validateTypes(&$items): void
+    private function validateTypes(array &$items): void
     {
         $discardTypes = $this instanceof DiscardsInvalidTypes;
 
@@ -88,13 +93,13 @@ trait HasGenerics
     {
         $generics = Arr::wrap($this->generics());
         foreach ($generics as $generic) {
-            if (is_string($generic) && enum_exists($generic)) {
+            if (is_string($generic) && enum_exists($generic) && method_exists($generic, 'tryFrom')) {
                 if (is_string($item) || is_int($item)) {
                     $item = $generic::tryFrom($item) ?? $item;
                 }
             }
 
-            if (is_a($generic, CastableGenericType::class, true)) {
+            if (is_string($generic) && is_a($generic, CastableGenericType::class, true)) {
                 $item = $generic::castType($item);
             }
         }
@@ -135,6 +140,10 @@ trait HasGenerics
 
         if (is_string($type)) {
             $type = Type::tryFrom($type);
+        }
+
+        if (!$type instanceof Type) {
+            return false;
         }
 
         return $type->equals(Type::fromValue($item))

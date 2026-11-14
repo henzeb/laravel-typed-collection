@@ -15,9 +15,12 @@ trait HandlesTypeOutput
             return $item::class;
         }
 
-        return Type::fromValue($item)->value();
+        return Type::fromValue($item)?->value() ?? 'unknown';
     }
 
+    /**
+     * @param array<array-key, mixed> $types
+     */
     private function typesToString(array $types): string
     {
         return implode(

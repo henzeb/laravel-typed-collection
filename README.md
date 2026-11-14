@@ -16,6 +16,8 @@ Unlike many other packages, this one has support for
 
 ## Installation
 
+Requires PHP 8.2 or higher and Laravel 12 or 13.
+
 Just install with the following command.
 
 ```bash

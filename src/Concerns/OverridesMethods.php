@@ -35,6 +35,7 @@ trait OverridesMethods
         $this->validateKeyTypes($items);
 
         parent::__construct(
+            // @phpstan-ignore argument.type
             $items
         );
     }
@@ -59,26 +60,32 @@ trait OverridesMethods
         $this->validateType($value);
         $this->validateKeyType($key);
 
+        // @phpstan-ignore argument.type
         parent::offsetSet($key, $value);
     }
 
+    // @phpstan-ignore selfOut.type
     public function add($item): static
     {
+        // @phpstan-ignore argument.type
         return $this->put(null, $item);
     }
 
+    // @phpstan-ignore selfOut.type
     public function push(...$values): static
     {
         $this->castTypes($values);
         $this->validateTypes($values);
         $this->validateKeyTypes($values);
 
+        // @phpstan-ignore argument.type
         return parent::push(...$values);
     }
 
     /**
      * @throws InvalidTypeException
      */
+    // @phpstan-ignore selfOut.type
     public function prepend($value, $key = null): static
     {
         $this->castType($value);
@@ -90,6 +97,7 @@ trait OverridesMethods
         $this->validateType($value);
         $this->validateKeyType($key);
 
+        // @phpstan-ignore argument.type
         return parent::prepend(...func_get_args());
     }
 
@@ -100,11 +108,13 @@ trait OverridesMethods
             return parent::lazy();
         }
 
+        // @phpstan-ignore return.type
         return new $lazyClass($this->all());
     }
 
     public function chunk($size, $preserveKeys = true)
     {
+        // @phpstan-ignore return.type
         return $this->collect()
             ->chunk($size, $preserveKeys)
             ->mapInto(static::class);
@@ -112,21 +122,25 @@ trait OverridesMethods
 
     public function map(callable $callback)
     {
+        // @phpstan-ignore return.type
         return $this->collect()->map($callback);
     }
 
     public function mapWithKeys(callable $callback)
     {
+        // @phpstan-ignore return.type
         return $this->collect()->mapWithKeys($callback);
     }
 
     public function mapToDictionary(callable $callback)
     {
+        // @phpstan-ignore return.type
         return $this->collect()->mapToDictionary($callback);
     }
 
     public function keys()
     {
+        // @phpstan-ignore return.type
         return $this->collect()->keys();
     }
 }

@@ -47,6 +47,9 @@ enum Type
         };
     }
 
+    /**
+     * @return array<int, Type>
+     */
     public static function keyables(): array
     {
         return [
@@ -89,7 +92,8 @@ enum Type
             self::Null => 'NULL',
             self::Resource => 'resource',
             self::Object => 'object',
-            self::Numeric => 'numeric'
+            self::Numeric => 'numeric',
+            self::Mixed => 'mixed',
         };
     }
 }

@@ -7,6 +7,7 @@ use Henzeb\Collection\Exceptions\MissingGenericsException;
 use Henzeb\Collection\Generics\Uuid;
 use Henzeb\Collection\LazyTypedCollection;
 use Henzeb\Collection\Providers\TypedCollectionProvider;
+use Henzeb\Collection\Support\GenericsLazyCollection;
 use Henzeb\Collection\TypedCollection;
 
 beforeEach(function () {
@@ -212,4 +213,29 @@ test('only key generics lazy', function () {
 
     expect(fn () => $collection->getIterator()->next())
         ->toThrow(InvalidTypeException::class);
+});
+
+test('with generics to lazy keeps generics', function () {
+    $collection = collect(['hello', 'world'])->withGenerics('string')->lazy();
+
+    expect($collection)->toBeInstanceOf(GenericsLazyCollection::class)
+        ->and($collection->all())->toBe(['hello', 'world'])
+        ->and($collection->accepts('hello'))->toBeTrue()
+        ->and($collection->accepts(1))->toBeFalse();
+});
+
+test('with key generics to lazy keeps key generics', function () {
+    $collection = collect([1 => 'hello'])->withKeyGenerics('int')->lazy();
+
+    expect($collection)->toBeInstanceOf(GenericsLazyCollection::class)
+        ->and($collection->all())->toBe([1 => 'hello'])
+        ->and($collection->acceptsKey(1))->toBeTrue()
+        ->and($collection->acceptsKey('hello'))->toBeFalse();
+});
+
+test('closed resource is not accepted as key', function () {
+    $resource = fopen('php://memory', 'r');
+    fclose($resource);
+
+    expect(collect()->withKeyGenerics('int')->acceptsKey($resource))->toBeFalse();
 });
