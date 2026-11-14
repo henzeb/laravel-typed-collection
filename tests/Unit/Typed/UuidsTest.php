@@ -6,7 +6,7 @@ use Henzeb\Collection\Lazy\Uuids as LazyUuids;
 use Henzeb\Collection\Typed\Uuids;
 
 it('returns correct generic type', function () {
-    $collection = new class extends Uuids {
+    $collection = new class () extends Uuids {
         public function getGenerics()
         {
             return $this->generics();
@@ -17,7 +17,7 @@ it('returns correct generic type', function () {
 });
 
 it('returns correct lazy class', function () {
-    $collection = new class extends Uuids {
+    $collection = new class () extends Uuids {
         public function getLazyClass()
         {
             return $this->lazyClass();
@@ -46,12 +46,12 @@ it('accepts valid uuid values', function () {
 
 it('rejects invalid uuid values', function () {
     $validUuid = '550e8400-e29b-41d4-a716-446655440000';
-    expect(fn() => new Uuids([$validUuid, 'invalid-uuid']))
+    expect(fn () => new Uuids([$validUuid, 'invalid-uuid']))
         ->toThrow(InvalidTypeException::class);
 });
 
 it('rejects non-string values', function () {
     $validUuid = '550e8400-e29b-41d4-a716-446655440000';
-    expect(fn() => new Uuids([$validUuid, 123]))
+    expect(fn () => new Uuids([$validUuid, 123]))
         ->toThrow(InvalidTypeException::class);
 });

@@ -35,6 +35,7 @@
   },
   "require-dev": {
     "calebporzio/sushi": "^2.4",
+    "laravel/pint": "^1",
     "orchestra/testbench": "^8|^9|^10|^11",
     "pestphp/pest": "^2.0|^3.0|^4.0",
     "phpstan/phpstan": "^1.4|^2.0",

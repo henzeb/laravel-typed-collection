@@ -6,7 +6,7 @@ use Henzeb\Collection\Lazy\Objects as LazyObjects;
 use Henzeb\Collection\Typed\Objects;
 
 it('returns correct generic type', function () {
-    $collection = new class extends Objects {
+    $collection = new class () extends Objects {
         public function getGenerics()
         {
             return $this->generics();
@@ -17,7 +17,7 @@ it('returns correct generic type', function () {
 });
 
 it('returns correct lazy class', function () {
-    $collection = new class extends Objects {
+    $collection = new class () extends Objects {
         public function getLazyClass()
         {
             return $this->lazyClass();
@@ -46,6 +46,6 @@ it('accepts object values', function () {
 
 it('rejects non-object values', function () {
     $obj = new stdClass();
-    expect(fn() => new Objects([$obj, 'string']))
+    expect(fn () => new Objects([$obj, 'string']))
         ->toThrow(InvalidTypeException::class);
 });

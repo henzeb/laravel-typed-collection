@@ -15,7 +15,7 @@ test('message contains generic', function () {
 });
 
 test('message contains unknown generic', function () {
-    $testObject = new class {};
+    $testObject = new class () {};
     $exception = new InvalidTypeException(
         'Henzeb\Collection\Tests\Unit\Exceptions\InvalidTypeExceptionTest',
         'Hello World',

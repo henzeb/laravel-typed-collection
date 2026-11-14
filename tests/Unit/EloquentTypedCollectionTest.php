@@ -57,7 +57,7 @@ test('refresh', function () {
 });
 
 test('to base', function () {
-    $collection = new class extends EloquentTypedCollection {
+    $collection = new class () extends EloquentTypedCollection {
         protected function generics(): string|Type|array
         {
             return Type::Array;
@@ -68,7 +68,7 @@ test('to base', function () {
 });
 
 test('to base with given class', function () {
-    $collection = new class([['regular' => 'array']]) extends EloquentTypedCollection {
+    $collection = new class ([['regular' => 'array']]) extends EloquentTypedCollection {
         protected function generics(): string|Type|array
         {
             return Type::Array;
@@ -82,7 +82,7 @@ test('to base with given class', function () {
 
     expect($collection->toBase())->toBeInstanceOf(Arrays::class);
 
-    $mapped = $collection->map(fn(array $array) => json_encode($array))->toArray();
+    $mapped = $collection->map(fn (array $array) => json_encode($array))->toArray();
 
     expect($mapped)->toEqual([json_encode(['regular' => 'array'])]);
 });

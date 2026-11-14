@@ -6,7 +6,7 @@ use Henzeb\Collection\Lazy\Booleans as LazyBooleans;
 use Henzeb\Collection\Typed\Booleans;
 
 it('returns correct generic type', function () {
-    $collection = new class extends Booleans {
+    $collection = new class () extends Booleans {
         public function getGenerics()
         {
             return $this->generics();
@@ -17,7 +17,7 @@ it('returns correct generic type', function () {
 });
 
 it('returns correct lazy class', function () {
-    $collection = new class extends Booleans {
+    $collection = new class () extends Booleans {
         public function getLazyClass()
         {
             return $this->lazyClass();
@@ -41,6 +41,6 @@ it('accepts boolean values', function () {
 });
 
 it('rejects non-boolean values', function () {
-    expect(fn() => new Booleans([true, 'string']))
+    expect(fn () => new Booleans([true, 'string']))
         ->toThrow(InvalidTypeException::class);
 });

@@ -24,7 +24,9 @@ use Illuminate\Support\LazyCollection;
  */
 abstract class LazyTypedCollection extends LazyCollection
 {
-    use HasGenerics, HasGenericKeys, HasBaseClass;
+    use HasGenerics;
+    use HasGenericKeys;
+    use HasBaseClass;
 
     /**
      * @throws InvalidKeyGenericException

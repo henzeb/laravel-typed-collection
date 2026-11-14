@@ -13,7 +13,8 @@ use Sushi\Sushi;
  */
 class User extends Model
 {
-    use Sushi, TypedCollection;
+    use Sushi;
+    use TypedCollection;
 
     protected $guarded = [];
 

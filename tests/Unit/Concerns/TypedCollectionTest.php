@@ -15,7 +15,7 @@ use Illuminate\Support\LazyCollection;
 class TestTypedCollectionClass
 {
     use TypedCollection;
-    
+
     public $typedCollection = null;
 }
 
@@ -35,39 +35,39 @@ test('user model all should return users collection', function () {
 test('should throw error when invalid collection type', function () {
     $testClass = new TestTypedCollectionClass();
     $testClass->typedCollection = TestTypedCollectionClass::class;
-    
-    expect(fn() => $testClass->newCollection())
+
+    expect(fn () => $testClass->newCollection())
         ->toThrow(InvalidTypedCollectionException::class, 'TestTypedCollectionClass');
 });
 
 test('should throw error when not typed collection', function () {
     $testClass = new TestTypedCollectionClass();
     $testClass->typedCollection = BaseCollection::class;
-    
-    expect(fn() => $testClass->newCollection())
+
+    expect(fn () => $testClass->newCollection())
         ->toThrow(InvalidTypedCollectionException::class, 'TestTypedCollectionClass');
 });
 
 test('should throw error when not eloquent typed collection', function () {
     $testClass = new TestTypedCollectionClass();
     $testClass->typedCollection = Collection::class;
-    
-    expect(fn() => $testClass->newCollection())
+
+    expect(fn () => $testClass->newCollection())
         ->toThrow(InvalidTypedCollectionException::class, 'TestTypedCollectionClass');
 });
 
 test('should throw error when typed lazy collection', function () {
     $testClass = new TestTypedCollectionClass();
     $testClass->typedCollection = LazyCollection::class;
-    
-    expect(fn() => $testClass->newCollection())
+
+    expect(fn () => $testClass->newCollection())
         ->toThrow(InvalidTypedCollectionException::class, 'TestTypedCollectionClass');
 });
 
 test('should throw error when typed collection omitted', function () {
     $testClass = new TestTypedCollectionClass();
-    
-    expect(fn() => $testClass->newCollection())
+
+    expect(fn () => $testClass->newCollection())
         ->toThrow(MissingTypedCollectionException::class, 'TestTypedCollectionClass');
 });
 

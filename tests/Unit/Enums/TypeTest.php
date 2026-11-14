@@ -33,7 +33,7 @@ test('from value', function (?Type $expects, mixed $from) {
     'array' => [Type::Array, ['Array']],
     'null' => [Type::Null, null],
     'resource' => [Type::Resource, fopen('php://memory', 'r+')],
-    'closed-resource' => [null, tap(fopen('php://memory', 'r+'), fn($stdin) => fclose($stdin))],
+    'closed-resource' => [null, tap(fopen('php://memory', 'r+'), fn ($stdin) => fclose($stdin))],
     'object' => [Type::Object, new \stdClass()],
 ]);
 

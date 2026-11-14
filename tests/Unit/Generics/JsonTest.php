@@ -63,7 +63,7 @@ test('json validates native', function () {
 
 test('json validates depth', function () {
     useNative(false);
-    
+
     expect(Json::matchesType(json_encode(generateArray(512))))->toBeTrue();
     expect(Json::matchesType(json_encode(generateArray(513))))->toBeFalse();
 });
@@ -90,7 +90,7 @@ test('json fails on not a json native', function () {
 
 test('json fails on invalid json', function () {
     useNative(false);
-    
+
     expect(Json::matchesType(ltrim(json_encode(['hello' => 'world']), '{')))->toBeFalse();
 });
 
@@ -100,12 +100,12 @@ test('json fails on invalid json native', function () {
 
 test('typecast', function () {
     $expected = json_encode(['regular' => 'array']);
-    
+
     expect(Json::castType(['regular' => 'array']))->toBe($expected);
     expect(Json::castType(collect(['regular' => 'array'])))->toBe($expected);
 
     expect(Json::castType(
-        new class implements Arrayable {
+        new class () implements Arrayable {
             public function toArray()
             {
                 return ['regular' => 'array'];
@@ -114,7 +114,7 @@ test('typecast', function () {
     ))->toBe($expected);
 
     expect(Json::castType(
-        new class implements \JsonSerializable {
+        new class () implements \JsonSerializable {
             public function jsonSerialize(): mixed
             {
                 return ['regular' => 'array'];
@@ -123,7 +123,7 @@ test('typecast', function () {
     ))->toBe($expected);
 
     expect(Json::castType(
-        new class implements Jsonable {
+        new class () implements Jsonable {
             public function toJson($options = 0): string
             {
                 return json_encode(['regular' => 'array']);

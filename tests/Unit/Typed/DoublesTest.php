@@ -6,7 +6,7 @@ use Henzeb\Collection\Lazy\Doubles as LazyDoubles;
 use Henzeb\Collection\Typed\Doubles;
 
 it('returns correct generic type', function () {
-    $collection = new class extends Doubles {
+    $collection = new class () extends Doubles {
         public function getGenerics()
         {
             return $this->generics();
@@ -17,7 +17,7 @@ it('returns correct generic type', function () {
 });
 
 it('returns correct lazy class', function () {
-    $collection = new class extends Doubles {
+    $collection = new class () extends Doubles {
         public function getLazyClass()
         {
             return $this->lazyClass();
@@ -41,6 +41,6 @@ it('accepts double values', function () {
 });
 
 it('rejects non-double values', function () {
-    expect(fn() => new Doubles([1.5, 'string']))
+    expect(fn () => new Doubles([1.5, 'string']))
         ->toThrow(InvalidTypeException::class);
 });

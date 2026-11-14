@@ -17,5 +17,8 @@ use Illuminate\Database\Eloquent\Collection;
  */
 abstract class EloquentTypedCollection extends Collection
 {
-    use HasGenerics, HasGenericKeys, OverridesMethods, HasBaseClass;
+    use HasGenerics;
+    use HasGenericKeys;
+    use OverridesMethods;
+    use HasBaseClass;
 }

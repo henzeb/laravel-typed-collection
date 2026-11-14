@@ -6,7 +6,7 @@ use Henzeb\Collection\Lazy\Ulids as LazyUlids;
 use Henzeb\Collection\Typed\Ulids;
 
 it('returns correct generic type', function () {
-    $collection = new class extends Ulids {
+    $collection = new class () extends Ulids {
         public function getGenerics()
         {
             return $this->generics();
@@ -17,7 +17,7 @@ it('returns correct generic type', function () {
 });
 
 it('returns correct lazy class', function () {
-    $collection = new class extends Ulids {
+    $collection = new class () extends Ulids {
         public function getLazyClass()
         {
             return $this->lazyClass();
@@ -46,12 +46,12 @@ it('accepts valid ulid values', function () {
 
 it('rejects invalid ulid values', function () {
     $validUlid = '01ARZ3NDEKTSV4RRFFQ69G5FAV';
-    expect(fn() => new Ulids([$validUlid, 'invalid-ulid']))
+    expect(fn () => new Ulids([$validUlid, 'invalid-ulid']))
         ->toThrow(InvalidTypeException::class);
 });
 
 it('rejects non-string values', function () {
     $validUlid = '01ARZ3NDEKTSV4RRFFQ69G5FAV';
-    expect(fn() => new Ulids([$validUlid, 123]))
+    expect(fn () => new Ulids([$validUlid, 123]))
         ->toThrow(InvalidTypeException::class);
 });

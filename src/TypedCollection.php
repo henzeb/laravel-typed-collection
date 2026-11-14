@@ -16,5 +16,7 @@ use Illuminate\Support\Collection;
  */
 abstract class TypedCollection extends Collection
 {
-    use HasGenerics, HasGenericKeys, OverridesMethods;
+    use HasGenerics;
+    use HasGenericKeys;
+    use OverridesMethods;
 }

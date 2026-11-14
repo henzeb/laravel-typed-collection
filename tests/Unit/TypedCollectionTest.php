@@ -22,7 +22,7 @@ use Illuminate\Support\LazyCollection;
 use Henzeb\Collection\Tests\Stubs\TestObject;
 
 test('empty generics', function () {
-    expect(fn() => new class([]) extends TypedCollection {
+    expect(fn () => new class ([]) extends TypedCollection {
         protected function generics(): string|Type|array
         {
             return [];
@@ -31,7 +31,7 @@ test('empty generics', function () {
 });
 
 test('invalid generics', function () {
-    expect(fn() => new class([]) extends TypedCollection {
+    expect(fn () => new class ([]) extends TypedCollection {
         protected function generics(): string|Type|array
         {
             return 'RandomDoesNotExistString';
@@ -41,7 +41,7 @@ test('invalid generics', function () {
 
 test('invalid generics with object', function () {
     try {
-        new class([]) extends TypedCollection {
+        new class ([]) extends TypedCollection {
             protected function generics(): string|Type|array
             {
                 return [$this];
@@ -54,7 +54,7 @@ test('invalid generics with object', function () {
 });
 
 test('invalid generics where one is valid', function () {
-    expect(fn() => new class([]) extends TypedCollection {
+    expect(fn () => new class ([]) extends TypedCollection {
         protected function generics(): string|Type|array
         {
             return ['bool', Type::String, 'RandomDoesNotExistString'];
@@ -63,7 +63,7 @@ test('invalid generics where one is valid', function () {
 });
 
 test('invalid generics where one is invalid', function () {
-    expect(fn() => new class([]) extends TypedCollection {
+    expect(fn () => new class ([]) extends TypedCollection {
         protected function generics(): string|Type|array
         {
             return [self::class, 'stringed'];
@@ -72,53 +72,54 @@ test('invalid generics where one is invalid', function () {
 });
 
 test('valid generics class', function () {
-    new class([]) extends TypedCollection {
+    new class ([]) extends TypedCollection {
         protected function generics(): string|Type|array
         {
             return [self::class];
         }
     };
-    
+
     expect(true)->toBeTrue();
 });
 
 test('valid generics type string', function () {
-    new class([]) extends TypedCollection {
+    new class ([]) extends TypedCollection {
         protected function generics(): string|Type|array
         {
             return ['bool'];
         }
     };
-    
+
     expect(true)->toBeTrue(); // No exception should be thrown
 });
 
 test('valid generics with type', function () {
-    new class([]) extends TypedCollection {
+    new class ([]) extends TypedCollection {
         protected function generics(): string|Type|array
         {
             return [Type::Numeric];
         }
     };
-    
+
     expect(true)->toBeTrue(); // No exception should be thrown
 });
 
 test('validate items', function () {
     $testObject = new TestObject();
-    
-    $collection = new class(['Hello World']) extends TypedCollection {
+
+    $collection = new class (['Hello World']) extends TypedCollection {
         protected function generics(): string|Type|array
         {
             return ['string'];
         }
     };
 
-    $collection2 = new class(['Hello World', $testObject], $testObject) extends TypedCollection {
-        public function __construct($items, private $testObject) {
+    $collection2 = new class (['Hello World', $testObject], $testObject) extends TypedCollection {
+        public function __construct($items, private $testObject)
+        {
             parent::__construct($items);
         }
-        
+
         protected function generics(): string|Type|array
         {
             return ['string', TestObject::class];
@@ -131,7 +132,7 @@ test('validate items', function () {
 
 test('validate items fail', function () {
     $testObject = new TestObject();
-    expect(fn() => new class([$testObject]) extends TypedCollection {
+    expect(fn () => new class ([$testObject]) extends TypedCollection {
         protected function generics(): string|Type|array
         {
             return [TypedCollection::class];
@@ -140,7 +141,7 @@ test('validate items fail', function () {
 });
 
 test('validate null fail', function () {
-    expect(fn() => new class([null]) extends TypedCollection {
+    expect(fn () => new class ([null]) extends TypedCollection {
         protected function generics(): string|Type|array
         {
             return [TypedCollection::class];
@@ -150,7 +151,7 @@ test('validate null fail', function () {
 
 test('add fail', function () {
     $testObject = new TestObject();
-    expect(fn() => (new class() extends TypedCollection {
+    expect(fn () => (new class () extends TypedCollection {
         protected function generics(): string|Type|array
         {
             return ['string'];
@@ -160,7 +161,7 @@ test('add fail', function () {
 
 test('add success', function () {
     $testObject = new TestObject();
-    $collection = (new class() extends TypedCollection {
+    $collection = (new class () extends TypedCollection {
         protected function generics(): string|Type|array
         {
             return [TestObject::class];
@@ -172,7 +173,7 @@ test('add success', function () {
 
 test('push fail', function () {
     $testObject = new TestObject();
-    expect(fn() => (new class() extends TypedCollection {
+    expect(fn () => (new class () extends TypedCollection {
         protected function generics(): string|Type|array
         {
             return ['string'];
@@ -182,7 +183,7 @@ test('push fail', function () {
 
 test('push success', function () {
     $testObject = new TestObject();
-    $collection = (new class() extends TypedCollection {
+    $collection = (new class () extends TypedCollection {
         protected function generics(): string|Type|array
         {
             return [TestObject::class];
@@ -194,7 +195,7 @@ test('push success', function () {
 
 test('prepend fail', function () {
     $testObject = new TestObject();
-    expect(fn() => (new class() extends TypedCollection {
+    expect(fn () => (new class () extends TypedCollection {
         protected function generics(): string|Type|array
         {
             return ['string'];
@@ -203,7 +204,7 @@ test('prepend fail', function () {
 });
 
 test('prepend fail on key', function () {
-    expect(fn() => (new class() extends TypedCollection {
+    expect(fn () => (new class () extends TypedCollection {
         protected function generics(): string|Type|array
         {
             return ['string'];
@@ -218,7 +219,7 @@ test('prepend fail on key', function () {
 
 test('prepend success', function () {
     $testObject = new TestObject();
-    $collection = (new class() extends TypedCollection {
+    $collection = (new class () extends TypedCollection {
         protected function generics(): string|Type|array
         {
             return [TestObject::class];
@@ -230,11 +231,12 @@ test('prepend success', function () {
 
 test('collect', function () {
     $testObject = new TestObject();
-    $collection = new class([$testObject], $testObject) extends TypedCollection {
-        public function __construct($items, private $testObject) {
+    $collection = new class ([$testObject], $testObject) extends TypedCollection {
+        public function __construct($items, private $testObject)
+        {
             parent::__construct($items);
         }
-        
+
         protected function generics(): string|Type|array
         {
             return [TestObject::class];
@@ -248,7 +250,7 @@ test('collect', function () {
 });
 
 test('lazy', function () {
-    $typed = new class(['hello world']) extends TypedCollection {
+    $typed = new class (['hello world']) extends TypedCollection {
         protected function generics(): string|Type|array
         {
             return Type::String;
@@ -263,7 +265,7 @@ test('lazy', function () {
 });
 
 test('lazy fails with self class', function () {
-    $typed = new class(['hello world']) extends TypedCollection {
+    $typed = new class (['hello world']) extends TypedCollection {
         protected function generics(): string|Type|array
         {
             return Type::String;
@@ -275,18 +277,18 @@ test('lazy fails with self class', function () {
         }
     };
 
-    expect(fn() => $typed->lazy())->toThrow(TypeError::class);
+    expect(fn () => $typed->lazy())->toThrow(TypeError::class);
 });
 
 test('lazy with custom class', function () {
-    $lazyClass = new class() extends LazyTypedCollection {
+    $lazyClass = new class () extends LazyTypedCollection {
         protected function generics(): string|Type|array
         {
             return Type::String;
         }
     };
 
-    $typed = new class(['hello world']) extends TypedCollection {
+    $typed = new class (['hello world']) extends TypedCollection {
         public string $lazyClass = '';
 
         protected function generics(): string|Type|array
@@ -310,7 +312,7 @@ test('lazy with custom class', function () {
 });
 
 test('interface as generic', function () {
-    $collection = new class extends TypedCollection {
+    $collection = new class () extends TypedCollection {
         protected function generics(): string|Type|array
         {
             return ShouldBeUnique::class;
@@ -318,23 +320,22 @@ test('interface as generic', function () {
     };
 
     $collection->add(
-        new class implements ShouldBeUnique {
-
+        new class () implements ShouldBeUnique {
         }
     );
-    
+
     expect(true)->toBeTrue(); // No exception should be thrown
 });
 
 test('custom generic type', function () {
-    $genericType = new class implements GenericType {
+    $genericType = new class () implements GenericType {
         public static function matchesType(mixed $item): bool
         {
             return true;
         }
     };
 
-    $collection = new class($genericType::class, ['Hello World'],) extends TypedCollection {
+    $collection = new class ($genericType::class, ['Hello World'], ) extends TypedCollection {
         public function __construct(private string $genericType, $items = [])
         {
             parent::__construct($items);
@@ -350,14 +351,14 @@ test('custom generic type', function () {
 });
 
 test('custom generic type fail', function () {
-    $genericType = new class implements GenericType {
+    $genericType = new class () implements GenericType {
         public static function matchesType(mixed $item): bool
         {
             return false;
         }
     };
 
-    expect(fn() => new class($genericType::class, ['Hello World']) extends TypedCollection {
+    expect(fn () => new class ($genericType::class, ['Hello World']) extends TypedCollection {
         public function __construct(private string $genericType, $items = [])
         {
             parent::__construct($items);
@@ -380,12 +381,12 @@ test('generic key validation', function () {
         Type::String,
         [Type::String, Uuid::class, Json::class]
     );
-    
+
     expect(true)->toBeTrue(); // No exception should be thrown
 });
 
 test('generic key fail after success with type', function () {
-    expect(fn() => new GenericsCollection(
+    expect(fn () => new GenericsCollection(
         [],
         Type::String,
         [Type::String, TestObject::class, Json::class]
@@ -393,7 +394,7 @@ test('generic key fail after success with type', function () {
 });
 
 test('generic key fail after success with generic type', function () {
-    expect(fn() => new GenericsCollection(
+    expect(fn () => new GenericsCollection(
         [],
         Type::String,
         [Json::class, 'not a valid type']
@@ -406,19 +407,19 @@ test('generic key accepts stringed types', function () {
         Type::String,
         ['string', 'int', 'bool']
     );
-    
+
     expect(true)->toBeTrue(); // No exception should be thrown
 });
 
 test('invalid generic key string', function () {
-    expect(fn() => new GenericsCollection([], Type::String, self::class))
+    expect(fn () => new GenericsCollection([], Type::String, self::class))
         ->toThrow(InvalidKeyGenericException::class);
 });
 
 test('invalid generic key object', function () {
     $collection = new GenericsCollection([], Type::String, Type::String);
 
-    expect(fn() => $collection->put(new stdClass(), 'test'))
+    expect(fn () => $collection->put(new stdClass(), 'test'))
         ->toThrow(InvalidKeyTypeException::class);
 });
 
@@ -446,7 +447,7 @@ test('key validation', function (mixed $key, Type|string|array|null $generics = 
     $key = is_null($key) ? (int)$key : $key;
 
     if ($exception) {
-        expect(function() use ($key, $generics) {
+        expect(function () use ($key, $generics) {
             $collection = new GenericsCollection(
                 [$key => 'world'],
                 Type::String,
@@ -467,19 +468,19 @@ test('key validation', function (mixed $key, Type|string|array|null $generics = 
 
 test('key validation with string generic type', function () {
     $collection = new GenericsCollection(
-        ['test' => 'value'], 
+        ['test' => 'value'],
         Type::String,
         'string'
     );
-    
+
     expect($collection->all())->toBe(['test' => 'value']);
-    
+
     expect($collection->acceptsKey('valid_string_key'))->toBeTrue();
     expect($collection->acceptsKey(123))->toBeFalse();
 });
 
 test('missing key generics', function () {
-    expect(fn() => new class extends TypedCollection {
+    expect(fn () => new class () extends TypedCollection {
         protected function generics(): string|Type|array
         {
             return Type::String;
@@ -498,7 +499,7 @@ test('push key generics validation', function () {
 
     expect($collection->all())->toBe(['hello', 'world']);
 
-    expect(fn() => (new GenericsCollection([], Type::String, Type::String))
+    expect(fn () => (new GenericsCollection([], Type::String, Type::String))
         ->push('hello', 'world'))->toThrow(InvalidKeyTypeException::class);
 });
 
@@ -513,7 +514,7 @@ test('allow mixed', function () {
 });
 
 test('allow chunks', function () {
-    $collection = new class(['hello', 'world', '!']) extends TypedCollection {
+    $collection = new class (['hello', 'world', '!']) extends TypedCollection {
         protected function generics(): Type
         {
             return Type::String;
@@ -533,13 +534,13 @@ test('allow chunks', function () {
 });
 
 test('allow mapping', function () {
-    expect(Strings::make(['string', 'another'])->map(fn(string $string) => $string === 'string')->toArray())
+    expect(Strings::make(['string', 'another'])->map(fn (string $string) => $string === 'string')->toArray())
         ->toBe([true, false]);
 });
 
 test('allow with keys', function () {
     expect(Strings::make(['string', 'another'])->mapWithKeys(
-        fn(string $string, int $key) => [$key + 1 => $string === 'string']
+        fn (string $string, int $key) => [$key + 1 => $string === 'string']
     )->toArray())->toBe([1 => true, 2 => false]);
 });
 
@@ -549,7 +550,7 @@ test('keys', function () {
 });
 
 test('allow map to dictionary', function () {
-    $collection = new class([
+    $collection = new class ([
         [
             'name' => 'John Doe',
             'department' => 'Sales',
@@ -605,7 +606,7 @@ test('casting', function () {
     $collection->prepend(['fifth' => 'array']);
     expect($collection->get(0))->toBe(json_encode(['fifth' => 'array']));
 
-    $collection = new class extends TypedCollection {
+    $collection = new class () extends TypedCollection {
         public function generics(): string|Type|array
         {
             return Type::class;
@@ -618,15 +619,15 @@ test('casting', function () {
 
     $collection->add(Type::String);
 
-    expect(fn() => $collection->add('doesNotExist'))->toThrow(InvalidTypeException::class);
+    expect(fn () => $collection->add('doesNotExist'))->toThrow(InvalidTypeException::class);
 });
 
 test('casting to null', function () {
-    $collection = new class extends TypedCollection {
+    $collection = new class () extends TypedCollection {
         protected function generics(): string|Type|array
         {
             return (
-            new class implements CastableGenericType {
+            new class () implements CastableGenericType {
                 public static function castType(mixed $item): mixed
                 {
                     return null;
@@ -646,7 +647,7 @@ test('casting to null', function () {
 });
 
 test('discards invalid types', function () {
-    $collection = new class(['test', ['test']]) extends TypedCollection implements DiscardsInvalidTypes {
+    $collection = new class (['test', ['test']]) extends TypedCollection implements DiscardsInvalidTypes {
         protected function generics(): string|Type|array
         {
             return Type::Array;
@@ -672,7 +673,7 @@ test('generics collection with key generics sets generics to mixed', function ()
         null,
         Type::String
     );
-    
+
     expect($collection->all())->toBe(['test' => 'value', 'another' => 456]);
     expect($collection->acceptsKey('string_key'))->toBeTrue();
     expect($collection->acceptsKey(123))->toBeFalse();
@@ -680,40 +681,40 @@ test('generics collection with key generics sets generics to mixed', function ()
 
 test('generics collection lazy class method', function () {
     $collection = new GenericsCollection(['test' => 'value'], Type::String);
-    
+
     $reflection = new ReflectionClass($collection);
     $method = $reflection->getMethod('lazyClass');
     $method->setAccessible(true);
-    
+
     expect($method->invoke($collection))->toBe(\Henzeb\Collection\Support\GenericsLazyCollection::class);
 });
 
 test('typed arrays lazy class method', function () {
     $collection = new \Henzeb\Collection\Typed\Arrays([['item1'], ['item2']]);
-    
+
     $reflection = new ReflectionClass($collection);
     $method = $reflection->getMethod('lazyClass');
     $method->setAccessible(true);
-    
+
     expect($method->invoke($collection))->toBe(\Henzeb\Collection\Lazy\Arrays::class);
 });
 
 test('typed jsons lazy class method', function () {
     $collection = new \Henzeb\Collection\Typed\Jsons(['{"test": "value"}', '{"another": "json"}']);
-    
+
     $reflection = new ReflectionClass($collection);
     $method = $reflection->getMethod('lazyClass');
     $method->setAccessible(true);
-    
+
     expect($method->invoke($collection))->toBe(\Henzeb\Collection\Lazy\Jsons::class);
 });
 
 test('typed strings lazy class method', function () {
     $collection = new \Henzeb\Collection\Typed\Strings(['string1', 'string2']);
-    
+
     $reflection = new ReflectionClass($collection);
     $method = $reflection->getMethod('lazyClass');
     $method->setAccessible(true);
-    
+
     expect($method->invoke($collection))->toBe(\Henzeb\Collection\Lazy\Strings::class);
 });

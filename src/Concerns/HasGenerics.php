@@ -27,7 +27,7 @@ trait HasGenerics
         $generics = Arr::wrap($this->generics());
 
         if (empty($generics)) {
-            throw new MissingGenericsException;
+            throw new MissingGenericsException();
         }
 
         foreach ($generics as $generic) {

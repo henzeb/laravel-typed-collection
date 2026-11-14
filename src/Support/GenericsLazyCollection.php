@@ -18,7 +18,7 @@ class GenericsLazyCollection extends LazyTypedCollection
         if ($this->keyGenerics) {
             $this->generics = Type::Mixed;
         }
-        
+
         $this->generics = $this->generics ?: $this->collectGenerics();
         $this->keyGenerics = $this->keyGenerics ?: $this->collectKeyGenerics();
         parent::__construct($items);

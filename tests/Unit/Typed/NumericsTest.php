@@ -6,7 +6,7 @@ use Henzeb\Collection\Lazy\Numerics as LazyNumerics;
 use Henzeb\Collection\Typed\Numerics;
 
 it('returns correct generic type', function () {
-    $collection = new class extends Numerics {
+    $collection = new class () extends Numerics {
         public function getGenerics()
         {
             return $this->generics();
@@ -17,7 +17,7 @@ it('returns correct generic type', function () {
 });
 
 it('returns correct lazy class', function () {
-    $collection = new class extends Numerics {
+    $collection = new class () extends Numerics {
         public function getLazyClass()
         {
             return $this->lazyClass();
@@ -41,6 +41,6 @@ it('accepts numeric values', function () {
 });
 
 it('rejects non-numeric values', function () {
-    expect(fn() => new Numerics([1, 'not-numeric']))
+    expect(fn () => new Numerics([1, 'not-numeric']))
         ->toThrow(InvalidTypeException::class);
 });

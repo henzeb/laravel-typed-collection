@@ -6,7 +6,7 @@ use Henzeb\Collection\Lazy\Arrays as LazyArrays;
 use Henzeb\Collection\Typed\Arrays;
 
 it('returns correct generic type', function () {
-    $collection = new class extends Arrays {
+    $collection = new class () extends Arrays {
         public function getGenerics()
         {
             return $this->generics();
@@ -17,7 +17,7 @@ it('returns correct generic type', function () {
 });
 
 it('returns correct lazy class', function () {
-    $collection = new class extends Arrays {
+    $collection = new class () extends Arrays {
         public function getLazyClass()
         {
             return $this->lazyClass();
@@ -41,6 +41,6 @@ it('accepts array values', function () {
 });
 
 it('rejects non-array values', function () {
-    expect(fn() => new Arrays(['string', 123]))
+    expect(fn () => new Arrays(['string', 123]))
         ->toThrow(InvalidTypeException::class);
 });

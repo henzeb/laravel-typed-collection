@@ -6,7 +6,7 @@ use Henzeb\Collection\Lazy\Jsons as LazyJsons;
 use Henzeb\Collection\Typed\Jsons;
 
 it('returns correct generic type', function () {
-    $collection = new class extends Jsons {
+    $collection = new class () extends Jsons {
         public function getGenerics()
         {
             return $this->generics();
@@ -17,7 +17,7 @@ it('returns correct generic type', function () {
 });
 
 it('returns correct lazy class', function () {
-    $collection = new class extends Jsons {
+    $collection = new class () extends Jsons {
         public function getLazyClass()
         {
             return $this->lazyClass();
@@ -43,11 +43,11 @@ it('accepts valid json values', function () {
 });
 
 it('rejects invalid json values', function () {
-    expect(fn() => new Jsons(['{"valid": "json"}', 'invalid-json']))
+    expect(fn () => new Jsons(['{"valid": "json"}', 'invalid-json']))
         ->toThrow(InvalidTypeException::class);
 });
 
 it('rejects non-string values', function () {
-    expect(fn() => new Jsons(['{"valid": "json"}', 123]))
+    expect(fn () => new Jsons(['{"valid": "json"}', 123]))
         ->toThrow(InvalidTypeException::class);
 });

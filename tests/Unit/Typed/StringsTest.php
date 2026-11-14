@@ -6,7 +6,7 @@ use Henzeb\Collection\Lazy\Strings as LazyStrings;
 use Henzeb\Collection\Typed\Strings;
 
 it('returns correct generic type', function () {
-    $collection = new class extends Strings {
+    $collection = new class () extends Strings {
         public function getGenerics()
         {
             return $this->generics();
@@ -17,7 +17,7 @@ it('returns correct generic type', function () {
 });
 
 it('returns correct lazy class', function () {
-    $collection = new class extends Strings {
+    $collection = new class () extends Strings {
         public function getLazyClass()
         {
             return $this->lazyClass();
@@ -41,6 +41,6 @@ it('accepts string values', function () {
 });
 
 it('rejects non-string values', function () {
-    expect(fn() => new Strings(['string', 123]))
+    expect(fn () => new Strings(['string', 123]))
         ->toThrow(InvalidTypeException::class);
 });

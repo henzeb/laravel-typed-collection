@@ -28,17 +28,17 @@ test('get with generics', function () {
         'another string',
     ]);
 
-    expect(fn() => $collection->put('test', $this))
+    expect(fn () => $collection->put('test', $this))
         ->toThrow(InvalidTypeException::class);
 });
 
 test('get with generics without types', function () {
-    expect(fn() => collect()->withGenerics())
+    expect(fn () => collect()->withGenerics())
         ->toThrow(MissingGenericsException::class);
 });
 
 test('get with generics without types lazy', function () {
-    expect(fn() => collect()->lazy()->withGenerics())
+    expect(fn () => collect()->lazy()->withGenerics())
         ->toThrow(MissingGenericsException::class);
 });
 
@@ -58,12 +58,12 @@ test('get with generics lazy', function () {
         ->withGenerics('string')
         ->getIterator();
 
-    expect(fn() => $collection->next())
+    expect(fn () => $collection->next())
         ->toThrow(InvalidTypeException::class);
 });
 
 test('typed collection with generics', function () {
-    $typed = new class(['initial value']) extends TypedCollection {
+    $typed = new class (['initial value']) extends TypedCollection {
         protected function generics(): string|Type|array
         {
             return Type::String;
@@ -84,7 +84,7 @@ test('typed collection with generics', function () {
         'another string',
     ]);
 
-    expect(fn() => $collection->put('test', $this))
+    expect(fn () => $collection->put('test', $this))
         ->toThrow(InvalidTypeException::class);
 });
 
@@ -93,7 +93,7 @@ test('typed collection with key generics', function () {
     $uuid2 = \Ramsey\Uuid\Uuid::uuid4()->toString();
     $uuid3 = \Ramsey\Uuid\Uuid::uuid4()->toString();
 
-    $typed = new class([$uuid1 => 'initial value']) extends TypedCollection {
+    $typed = new class ([$uuid1 => 'initial value']) extends TypedCollection {
         protected function generics(): string|Type|array
         {
             return Type::String;
@@ -119,14 +119,14 @@ test('typed collection with key generics', function () {
         $uuid3 => 'another string',
     ]);
 
-    expect(fn() => $collection->put('test', $this))
+    expect(fn () => $collection->put('test', $this))
         ->toThrow(InvalidTypeException::class);
 });
 
 test('lazy typed collection with key generics', function () {
     $uuid1 = \Ramsey\Uuid\Uuid::uuid4()->toString();
 
-    $typed = new class([$uuid1 => 'initial value']) extends LazyTypedCollection {
+    $typed = new class ([$uuid1 => 'initial value']) extends LazyTypedCollection {
         protected function generics(): string|Type|array
         {
             return Type::String;
@@ -156,7 +156,7 @@ test('only generics', function () {
         ->onlyGenerics(Type::Bool)
         ->withGenerics(Type::Bool);
 
-    expect(fn() => collect([true, 'hello world'])
+    expect(fn () => collect([true, 'hello world'])
         ->onlyGenerics(Type::Bool)
         ->withGenerics(Type::String))
         ->toThrow(InvalidTypeException::class);
@@ -167,7 +167,7 @@ test('only key generics', function () {
         ->onlyKeyGenerics(Type::Int)
         ->withKeyGenerics(Type::Int);
 
-    expect(fn() => collect([0 => 'test', 'hello world' => 'test'])
+    expect(fn () => collect([0 => 'test', 'hello world' => 'test'])
         ->onlyKeyGenerics(Type::String)
         ->withKeyGenerics(Type::Int))
         ->toThrow(InvalidKeyTypeException::class);
@@ -193,7 +193,7 @@ test('only lazy generics', function () {
         ->onlyGenerics(Type::Bool)
         ->withGenerics(Type::String);
 
-    expect(fn() => $collection->getIterator()->next())
+    expect(fn () => $collection->getIterator()->next())
         ->toThrow(InvalidTypeException::class);
 });
 
@@ -210,6 +210,6 @@ test('only key generics lazy', function () {
         ->onlyGenerics(Type::String)
         ->withGenerics(Type::Int);
 
-    expect(fn() => $collection->getIterator()->next())
+    expect(fn () => $collection->getIterator()->next())
         ->toThrow(InvalidTypeException::class);
 });
